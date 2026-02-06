@@ -27,6 +27,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           RELEASEBOT_URL: ${{ secrets.RELEASEBOT_URL }}
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: node notify.js
       
       - name: Commit updated state
