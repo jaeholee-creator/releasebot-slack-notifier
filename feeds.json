@@ -1,0 +1,32 @@
+{
+  "rssFeeds": [
+    {
+      "id": "openai-news",
+      "name": "OpenAI News",
+      "vendor": "OpenAI",
+      "url": "https://openai.com/news/rss.xml",
+      "enabled": true
+    },
+    {
+      "id": "github-changelog",
+      "name": "GitHub Changelog",
+      "vendor": "GitHub",
+      "url": "https://github.blog/changelog.atom",
+      "enabled": true
+    },
+    {
+      "id": "google-workspace",
+      "name": "Google Workspace Updates",
+      "vendor": "Google",
+      "url": "https://workspaceupdates.googleblog.com/feeds/posts/default",
+      "enabled": true
+    },
+    {
+      "id": "n8n-releases",
+      "name": "n8n Releases",
+      "vendor": "n8n",
+      "url": "https://github.com/n8n-io/n8n/releases.atom",
+      "enabled": true
+    }
+  ]
+}
