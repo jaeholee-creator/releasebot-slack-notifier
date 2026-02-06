@@ -85,9 +85,5 @@
       ]
     }
   },
-  "notion": {
-    "dailyPageId": "2ff686b4-9b3b-810a-99ce-ddfdc0cefff1",
-    "dailyDbId": "2ff686b4-9b3b-817c-8567-d59188000dcc",
-    "dailyPageDate": "2026-02-06"
-  }
+  "notion": {}
 }

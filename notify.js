@@ -39,12 +39,11 @@ function fetchJson(url) {
   return fetchUrl(url).then(data => JSON.parse(data));
 }
 
-// ============ RSS/Atom Parser (Improved) ============
+// ============ RSS/Atom Parser ============
 
 function parseRssFeed(xml, feedConfig) {
   const items = [];
   
-  // Try Atom format first
   const atomEntries = xml.match(/<entry[^>]*>[\s\S]*?<\/entry>/gi) || [];
   if (atomEntries.length > 0) {
     for (const entry of atomEntries) {
@@ -68,7 +67,6 @@ function parseRssFeed(xml, feedConfig) {
     return items;
   }
   
-  // Try RSS 2.0 format
   const rssItems = xml.match(/<item[^>]*>[\s\S]*?<\/item>/gi) || [];
   for (const item of rssItems) {
     const title = extractTagContent(item, 'title');
@@ -93,15 +91,12 @@ function parseRssFeed(xml, feedConfig) {
 }
 
 function extractTagContent(xml, tagName) {
-  // Handle namespaced tags like content:encoded
   const escapedTag = tagName.replace(':', '\\:');
   
-  // Try to match with CDATA
   const cdataRegex = new RegExp(`<${escapedTag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${escapedTag}>`, 'i');
   let match = xml.match(cdataRegex);
   if (match) return match[1].trim();
   
-  // Try regular content
   const regex = new RegExp(`<${escapedTag}[^>]*>([\\s\\S]*?)<\\/${escapedTag}>`, 'i');
   match = xml.match(regex);
   if (match) return match[1].trim();
@@ -110,11 +105,9 @@ function extractTagContent(xml, tagName) {
 }
 
 function extractAtomLink(entry) {
-  // Try alternate link first
   let match = entry.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i);
   if (match) return match[1];
   
-  // Try any link with href
   match = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
   if (match) return match[1];
   
@@ -124,10 +117,8 @@ function extractAtomLink(entry) {
 function stripHtml(text) {
   if (!text) return '';
   
-  // STEP 1: Remove CDATA markers
   let result = text.replace(/^<!\[CDATA\[|\]\]>$/g, '');
   
-  // STEP 2: Decode HTML entities FIRST (before stripping tags!)
   result = result
     .replace(/&nbsp;/g, ' ')
     .replace(/&lt;/g, '<')
@@ -140,27 +131,22 @@ function stripHtml(text) {
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
     .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)));
   
-  // STEP 3: Now strip HTML tags (after entities are decoded to actual < and >)
   result = result
-    // Remove script and style contents
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Convert block elements to newlines for readability
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
     .replace(/<\/div>/gi, '\n')
     .replace(/<\/li>/gi, '\n')
     .replace(/<\/h[1-6]>/gi, '\n')
     .replace(/<\/tr>/gi, '\n')
-    // Remove all remaining HTML tags
     .replace(/<[^>]+>/g, '');
   
-  // STEP 4: Normalize whitespace
   result = result
-    .replace(/\n\s*\n\s*\n/g, '\n\n')  // Max 2 consecutive newlines
-    .replace(/[ \t]+/g, ' ')            // Multiple spaces to single
-    .replace(/\n /g, '\n')              // Remove leading space after newline
-    .replace(/ \n/g, '\n')              // Remove trailing space before newline
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n /g, '\n')
+    .replace(/ \n/g, '\n')
     .trim();
   
   return result;
@@ -236,8 +222,8 @@ function notionRequest(method, path, body) {
 
 function getTodayString() {
   const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
-  return kst.toISOString().split('T')[0]; // YYYY-MM-DD
+  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kst.toISOString().split('T')[0];
 }
 
 async function getOrCreateDailyPage(state) {
@@ -246,7 +232,7 @@ async function getOrCreateDailyPage(state) {
   
   if (state.notion?.dailyPageId && state.notion?.dailyPageDate === today) {
     console.log(`  → Using existing daily page: ${pageTitle}`);
-    return { pageId: state.notion.dailyPageId, dbId: state.notion.dailyDbId };
+    return state.notion.dailyPageId;
   }
   
   console.log(`  → Creating daily page: ${pageTitle}`);
@@ -273,69 +259,74 @@ async function getOrCreateDailyPage(state) {
   const pageId = page.id;
   console.log(`  ✓ Created page: ${pageId}`);
   
-  console.log(`  → Creating database inside page...`);
-  const dbPayload = {
-    parent: { page_id: pageId },
-    title: [{ type: 'text', text: { content: '릴리스 목록' } }],
-    is_inline: true,
-    properties: {
-      '제목': { title: {} },
-      '요약': { rich_text: {} },
-      '벤더': { select: {} },
-      '날짜': { date: {} },
-      'URL': { url: {} }
-    }
-  };
-  
-  const db = await notionRequest('POST', '/v1/databases', dbPayload);
-  const dbId = db.id;
-  console.log(`  ✓ Created database: ${dbId}`);
-  
-  console.log(`  → Setting column order...`);
-  const updatePayload = {
-    properties: {
-      '제목': { title: {} },
-      '요약': { rich_text: {} },
-      '벤더': { select: {} },
-      '날짜': { date: {} },
-      'URL': { url: {} }
-    }
-  };
-  
-  await notionRequest('PATCH', `/v1/databases/${dbId}`, updatePayload);
-  console.log(`  ✓ Column order set`);
-  
   state.notion = {
     dailyPageId: pageId,
-    dailyDbId: dbId,
     dailyPageDate: today
   };
   
-  return { pageId, dbId };
+  return pageId;
 }
 
-async function addToNotion(dbId, item, translatedSummary) {
+async function addToNotion(pageId, item, translatedSummary) {
   const isRss = item.feedType === 'rss';
   
   const title = isRss ? item.title : (item.release_details?.release_name || item.product?.display_name || 'Unknown');
   const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || 'Unknown');
-  const releaseDate = isRss 
-    ? (item.pubDate instanceof Date ? item.pubDate.toISOString() : item.pubDate)
-    : (item.release_date || item.created_at);
   const url = isRss ? item.link : `https://releasebot.io/updates/${item.product?.vendor?.slug || ''}`;
+  const source = isRss ? `📡 ${item.source}` : '🤖 Releasebot';
+  const releaseDate = isRss 
+    ? (item.pubDate instanceof Date ? item.pubDate.toLocaleDateString('ko-KR') : '')
+    : (item.release_date ? new Date(item.release_date).toLocaleDateString('ko-KR') : '');
   
-  const pagePayload = {
-    parent: { database_id: dbId },
-    properties: {
-      '제목': { title: [{ text: { content: title.substring(0, 100) } }] },
-      '요약': { rich_text: [{ text: { content: (translatedSummary || '').substring(0, 2000) } }] },
-      '벤더': { select: { name: vendor } },
-      '날짜': { date: releaseDate ? { start: releaseDate.split('T')[0] } : null },
-      'URL': { url: url || null }
+  const blocks = [
+    {
+      object: 'block',
+      type: 'heading_3',
+      heading_3: {
+        rich_text: [
+          {
+            type: 'text',
+            text: { content: `🚀 ${title.substring(0, 100)}`, link: url ? { url: url } : null }
+          }
+        ]
+      }
     }
-  };
+  ];
   
-  await notionRequest('POST', '/v1/pages', pagePayload);
+  if (translatedSummary) {
+    const summaryText = translatedSummary.length > 500 
+      ? translatedSummary.substring(0, 500) + '...' 
+      : translatedSummary;
+    blocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: summaryText } }]
+      }
+    });
+  }
+  
+  blocks.push({
+    object: 'block',
+    type: 'paragraph',
+    paragraph: {
+      rich_text: [
+        {
+          type: 'text',
+          text: { content: `${source} • ${vendor}${releaseDate ? ` • 📅 ${releaseDate}` : ''}` },
+          annotations: { color: 'gray' }
+        }
+      ]
+    }
+  });
+  
+  blocks.push({
+    object: 'block',
+    type: 'divider',
+    divider: {}
+  });
+  
+  await notionRequest('PATCH', `/v1/blocks/${pageId}/children`, { children: blocks });
 }
 
 // ============ Translation ============
@@ -599,11 +590,10 @@ async function main() {
     return;
   }
   
-  let notionDbId = null;
+  let notionPageId = null;
   if (NOTION_API_TOKEN) {
     try {
-      const { dbId } = await getOrCreateDailyPage(state);
-      notionDbId = dbId;
+      notionPageId = await getOrCreateDailyPage(state);
     } catch (e) {
       console.error(`  Notion setup failed: ${e.message}`);
     }
@@ -630,9 +620,9 @@ async function main() {
       console.error(`  ✗ Slack: ${e.message}`);
     }
     
-    if (notionDbId) {
+    if (notionPageId) {
       try {
-        await addToNotion(notionDbId, item, translatedSummary);
+        await addToNotion(notionPageId, item, translatedSummary);
         console.log('  ✓ Notion: Added');
       } catch (e) {
         console.error(`  ✗ Notion: ${e.message}`);
