@@ -4,17 +4,42 @@
   },
   "rss": {
     "openai-news": {
-      "seenIds": []
+      "seenIds": [
+        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
+        "https://openai.com/index/trusted-access-for-cyber",
+        "https://openai.com/index/introducing-openai-frontier",
+        "https://openai.com/index/gpt-5-3-codex-system-card",
+        "https://openai.com/index/introducing-gpt-5-3-codex"
+      ],
+      "lastUpdated": "2026-02-06T07:58:49.128Z"
     },
     "github-changelog": {
-      "seenIds": []
+      "seenIds": [],
+      "lastUpdated": "2026-02-06T07:58:49.376Z"
     },
     "google-workspace": {
-      "seenIds": []
+      "seenIds": [
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2735551091943595422",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3840825528764042752",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8895218584162291947",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-4999999193544403922",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3351997211355408631"
+      ],
+      "lastUpdated": "2026-02-06T07:58:49.729Z"
     },
     "n8n-releases": {
-      "seenIds": []
+      "seenIds": [
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.2",
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
+        "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
+        "tag:github.com,2008:Repository/193215554/n8n@2.4.8"
+      ],
+      "lastUpdated": "2026-02-06T07:58:50.569Z"
     }
   },
-  "notion": {}
+  "notion": {
+    "dailyPageId": "2ff686b4-9b3b-815c-b0f8-cc5b6a460046",
+    "dailyPageDate": "2026-02-06"
+  }
 }
