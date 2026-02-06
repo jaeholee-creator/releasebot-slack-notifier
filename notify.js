@@ -9,7 +9,6 @@ const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 const NOTION_API_TOKEN = process.env.NOTION_API_TOKEN;
 const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028ca574f';
 const STATE_FILE = 'feed_state.json';
-const NOTION_DB_FILE = 'notion_db_id.txt';
 const FEEDS_FILE = 'feeds.json';
 
 // ============ HTTP Utilities ============
@@ -17,9 +16,17 @@ const FEEDS_FILE = 'feeds.json';
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
     const client = url.startsWith('https') ? https : http;
-    client.get(url, (res) => {
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ReleaseBot/1.0)'
+      }
+    };
+    client.get(url, options, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchUrl(res.headers.location).then(resolve).catch(reject);
+        const redirectUrl = res.headers.location.startsWith('http') 
+          ? res.headers.location 
+          : new URL(res.headers.location, url).href;
+        return fetchUrl(redirectUrl).then(resolve).catch(reject);
       }
       let data = '';
       res.on('data', chunk => data += chunk);
@@ -32,26 +39,26 @@ function fetchJson(url) {
   return fetchUrl(url).then(data => JSON.parse(data));
 }
 
-// ============ RSS/Atom Parser ============
+// ============ RSS/Atom Parser (Improved) ============
 
 function parseRssFeed(xml, feedConfig) {
   const items = [];
   
   // Try Atom format first
-  const atomEntries = xml.match(/<entry[\s\S]*?<\/entry>/gi) || [];
+  const atomEntries = xml.match(/<entry[^>]*>[\s\S]*?<\/entry>/gi) || [];
   if (atomEntries.length > 0) {
     for (const entry of atomEntries) {
-      const title = extractTag(entry, 'title');
+      const title = extractTagContent(entry, 'title');
       const link = extractAtomLink(entry);
-      const published = extractTag(entry, 'published') || extractTag(entry, 'updated');
-      const summary = extractTag(entry, 'summary') || extractTag(entry, 'content');
-      const id = extractTag(entry, 'id') || link;
+      const published = extractTagContent(entry, 'published') || extractTagContent(entry, 'updated');
+      const content = extractTagContent(entry, 'content') || extractTagContent(entry, 'summary');
+      const id = extractTagContent(entry, 'id') || link;
       
       items.push({
         id: id,
-        title: cleanHtml(title),
+        title: stripHtml(title),
         link: link,
-        summary: cleanHtml(summary),
+        summary: stripHtml(content).substring(0, 500),
         pubDate: published ? new Date(published) : new Date(),
         source: feedConfig.name,
         vendor: feedConfig.vendor,
@@ -62,19 +69,19 @@ function parseRssFeed(xml, feedConfig) {
   }
   
   // Try RSS 2.0 format
-  const rssItems = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
+  const rssItems = xml.match(/<item[^>]*>[\s\S]*?<\/item>/gi) || [];
   for (const item of rssItems) {
-    const title = extractTag(item, 'title');
-    const link = extractTag(item, 'link');
-    const pubDate = extractTag(item, 'pubDate');
-    const description = extractTag(item, 'description');
-    const guid = extractTag(item, 'guid') || link;
+    const title = extractTagContent(item, 'title');
+    const link = extractTagContent(item, 'link') || extractAtomLink(item);
+    const pubDate = extractTagContent(item, 'pubDate') || extractTagContent(item, 'dc:date');
+    const description = extractTagContent(item, 'description') || extractTagContent(item, 'content:encoded');
+    const guid = extractTagContent(item, 'guid') || link;
     
     items.push({
       id: guid,
-      title: cleanHtml(title),
-      link: link,
-      summary: cleanHtml(description),
+      title: stripHtml(title),
+      link: stripHtml(link),
+      summary: stripHtml(description).substring(0, 500),
       pubDate: pubDate ? new Date(pubDate) : new Date(),
       source: feedConfig.name,
       vendor: feedConfig.vendor,
@@ -85,30 +92,65 @@ function parseRssFeed(xml, feedConfig) {
   return items;
 }
 
-function extractTag(xml, tag) {
-  const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\/${tag}>`, 'i');
-  const match = xml.match(regex);
-  if (match) {
-    return match[1].replace(/^<!\[CDATA\[|\]\]>$/g, '').trim();
-  }
+function extractTagContent(xml, tagName) {
+  // Handle namespaced tags like content:encoded
+  const escapedTag = tagName.replace(':', '\\:');
+  
+  // Try to match with CDATA
+  const cdataRegex = new RegExp(`<${escapedTag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${escapedTag}>`, 'i');
+  let match = xml.match(cdataRegex);
+  if (match) return match[1].trim();
+  
+  // Try regular content
+  const regex = new RegExp(`<${escapedTag}[^>]*>([\\s\\S]*?)<\\/${escapedTag}>`, 'i');
+  match = xml.match(regex);
+  if (match) return match[1].trim();
+  
   return '';
 }
 
 function extractAtomLink(entry) {
-  const linkMatch = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/);
-  return linkMatch ? linkMatch[1] : '';
+  // Try alternate link first
+  let match = entry.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["']/i);
+  if (match) return match[1];
+  
+  // Try any link with href
+  match = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
+  if (match) return match[1];
+  
+  return '';
 }
 
-function cleanHtml(text) {
+function stripHtml(text) {
   if (!text) return '';
+  
   return text
+    // Remove CDATA markers
+    .replace(/^<!\[CDATA\[|\]\]>$/g, '')
+    // Remove script and style contents
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Convert br and p to newlines
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    // Remove all other HTML tags
     .replace(/<[^>]+>/g, '')
+    // Decode HTML entities
+    .replace(/&nbsp;/g, ' ')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/\s+/g, ' ')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(code))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    // Normalize whitespace
+    .replace(/\n\s*\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
     .trim();
 }
 
@@ -119,7 +161,7 @@ function loadState() {
     const content = fs.readFileSync(STATE_FILE, 'utf8');
     return JSON.parse(content);
   } catch (e) {
-    return { releasebot: { lastSeenId: 0 }, rss: {} };
+    return { releasebot: { lastSeenId: 0 }, rss: {}, notion: {} };
   }
 }
 
@@ -180,50 +222,82 @@ function notionRequest(method, path, body) {
   });
 }
 
-async function getOrCreateNotionDatabase() {
-  let dbId = null;
-  try {
-    dbId = fs.readFileSync(NOTION_DB_FILE, 'utf8').trim();
-    if (dbId) {
-      try {
-        await notionRequest('GET', `/v1/databases/${dbId}`);
-        return dbId;
-      } catch (e) {
-        dbId = null;
-      }
-    }
-  } catch (e) {}
+function getTodayString() {
+  const now = new Date();
+  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
+  return kst.toISOString().split('T')[0]; // YYYY-MM-DD
+}
+
+async function getOrCreateDailyPage(state) {
+  const today = getTodayString();
+  const pageTitle = `${today} 신규 배포`;
   
-  console.log(`  → Creating new Notion database...`);
+  // Check if we already have today's page
+  if (state.notion?.dailyPageId && state.notion?.dailyPageDate === today) {
+    console.log(`  → Using existing daily page: ${pageTitle}`);
+    return { pageId: state.notion.dailyPageId, dbId: state.notion.dailyDbId };
+  }
   
-  const dbPayload = {
+  console.log(`  → Creating daily page: ${pageTitle}`);
+  
+  // Create new page for today
+  const pagePayload = {
     parent: { page_id: NOTION_PAGE_ID },
-    title: [{ type: 'text', text: { content: 'Release Updates' } }],
     properties: {
-      '제품명': { title: {} },
-      '버전': { rich_text: {} },
+      title: {
+        title: [{ text: { content: pageTitle } }]
+      }
+    },
+    children: [
+      {
+        object: 'block',
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [{ text: { content: '📦 오늘의 릴리스' } }]
+        }
+      }
+    ]
+  };
+  
+  const page = await notionRequest('POST', '/v1/pages', pagePayload);
+  const pageId = page.id;
+  console.log(`  ✓ Created page: ${pageId}`);
+  
+  // Create database inside the page
+  console.log(`  → Creating database inside page...`);
+  const dbPayload = {
+    parent: { page_id: pageId },
+    title: [{ type: 'text', text: { content: '릴리스 목록' } }],
+    is_inline: true,
+    properties: {
+      '제목': { title: {} },
       '벤더': { select: {} },
-      '요약': { rich_text: {} },
       '날짜': { date: {} },
+      '요약': { rich_text: {} },
       'URL': { url: {} },
       '소스': { select: {} }
     }
   };
   
-  const result = await notionRequest('POST', '/v1/databases', dbPayload);
-  dbId = result.id;
-  fs.writeFileSync(NOTION_DB_FILE, dbId);
-  console.log(`  ✓ Created Notion database: ${dbId}`);
+  const db = await notionRequest('POST', '/v1/databases', dbPayload);
+  const dbId = db.id;
+  console.log(`  ✓ Created database: ${dbId}`);
   
-  return dbId;
+  // Save to state
+  state.notion = {
+    dailyPageId: pageId,
+    dailyDbId: dbId,
+    dailyPageDate: today
+  };
+  
+  return { pageId, dbId };
 }
 
 async function addToNotion(dbId, item, translatedSummary) {
   const isRss = item.feedType === 'rss';
   
-  const product = isRss ? item.source : (item.product?.display_name || 'Unknown');
-  const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || '');
-  const version = isRss ? '' : (item.release_details?.release_number || item.release_details?.release_name || '');
+  const title = isRss ? item.title : (item.release_details?.release_name || item.product?.display_name || 'Unknown');
+  const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || 'Unknown');
   const releaseDate = isRss 
     ? (item.pubDate instanceof Date ? item.pubDate.toISOString() : item.pubDate)
     : (item.release_date || item.created_at);
@@ -233,11 +307,10 @@ async function addToNotion(dbId, item, translatedSummary) {
   const pagePayload = {
     parent: { database_id: dbId },
     properties: {
-      '제품명': { title: [{ text: { content: isRss ? item.title.substring(0, 100) : product } }] },
-      '버전': { rich_text: [{ text: { content: version || '-' } }] },
-      '벤더': { select: { name: vendor || 'Unknown' } },
-      '요약': { rich_text: [{ text: { content: (translatedSummary || '').substring(0, 2000) } }] },
+      '제목': { title: [{ text: { content: title.substring(0, 100) } }] },
+      '벤더': { select: { name: vendor } },
       '날짜': { date: releaseDate ? { start: releaseDate.split('T')[0] } : null },
+      '요약': { rich_text: [{ text: { content: (translatedSummary || '').substring(0, 2000) } }] },
       'URL': { url: url || null },
       '소스': { select: { name: source } }
     }
@@ -358,12 +431,12 @@ function formatSlackMessage(item, translatedSummary) {
   }
   
   if (translatedSummary) {
+    const summaryText = translatedSummary.length > 500 
+      ? translatedSummary.substring(0, 500) + '...' 
+      : translatedSummary;
     blocks.push({
       type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: translatedSummary.length > 500 ? translatedSummary.substring(0, 500) + '...' : translatedSummary
-      }
+      text: { type: 'mrkdwn', text: summaryText }
     });
   }
   
@@ -394,7 +467,7 @@ function formatSlackMessage(item, translatedSummary) {
 
 // ============ Main Functions ============
 
-async function processReleasebotFeed(state, notionDbId) {
+async function processReleasebotFeed(state) {
   console.log('\n📦 Processing Releasebot feed...');
   
   const lastSeenId = state.releasebot?.lastSeenId || 0;
@@ -439,7 +512,7 @@ async function processRssFeeds(state, feedsConfig) {
   for (const feed of rssFeeds) {
     if (!feed.enabled) continue;
     
-    console.log(`  → ${feed.name}: ${feed.url}`);
+    console.log(`  → ${feed.name}`);
     
     try {
       const xml = await fetchUrl(feed.url);
@@ -493,22 +566,12 @@ async function main() {
   const state = loadState();
   if (!state.rss) state.rss = {};
   if (!state.releasebot) state.releasebot = { lastSeenId: 0 };
+  if (!state.notion) state.notion = {};
   
   const feedsConfig = loadFeeds();
   
-  // Initialize Notion
-  let notionDbId = null;
-  if (NOTION_API_TOKEN) {
-    try {
-      notionDbId = await getOrCreateNotionDatabase();
-      console.log(`  Notion DB: ${notionDbId}`);
-    } catch (e) {
-      console.error(`  Notion setup failed: ${e.message}`);
-    }
-  }
-  
-  // Process all feeds
-  const releasebotItems = await processReleasebotFeed(state, notionDbId);
+  // Process all feeds first
+  const releasebotItems = await processReleasebotFeed(state);
   const rssItems = await processRssFeeds(state, feedsConfig);
   
   const allItems = [...releasebotItems, ...rssItems];
@@ -519,6 +582,17 @@ async function main() {
     console.log('No new items found');
     saveState(state);
     return;
+  }
+  
+  // Initialize Notion daily page if needed
+  let notionDbId = null;
+  if (NOTION_API_TOKEN) {
+    try {
+      const { dbId } = await getOrCreateDailyPage(state);
+      notionDbId = dbId;
+    } catch (e) {
+      console.error(`  Notion setup failed: ${e.message}`);
+    }
   }
   
   // Process each item
