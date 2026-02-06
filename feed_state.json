@@ -9,7 +9,8 @@
         "https://openai.com/index/trusted-access-for-cyber",
         "https://openai.com/index/introducing-openai-frontier",
         "https://openai.com/index/navigating-health-questions",
-        "https://openai.com/index/gpt-5-3-codex-system-card"
+        "https://openai.com/index/gpt-5-3-codex-system-card",
+        "https://openai.com/index/introducing-gpt-5-3-codex"
       ]
     },
     "github-changelog": {
@@ -35,8 +36,8 @@
     }
   },
   "notion": {
-    "dailyPageId": "2ff686b4-9b3b-8188-853b-d62e03c7d5da",
-    "dailyDbId": "2ff686b4-9b3b-81a3-9dca-c30b7171d601",
-    "dailyPageDate": "2026-02-06"
+    "dailyPageId": "2ff686b4-9b3b-8134-b955-d736f7965469",
+    "dailyDbId": "2ff686b4-9b3b-8186-a4d4-d867f8b51d59",
+    "dailyPageDate": "2026-02-05"
   }
 }
