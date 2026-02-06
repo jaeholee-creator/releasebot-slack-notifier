@@ -124,21 +124,11 @@ function extractAtomLink(entry) {
 function stripHtml(text) {
   if (!text) return '';
   
-  return text
-    // Remove CDATA markers
-    .replace(/^<!\[CDATA\[|\]\]>$/g, '')
-    // Remove script and style contents
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Convert br and p to newlines
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<\/div>/gi, '\n')
-    .replace(/<\/li>/gi, '\n')
-    .replace(/<\/h[1-6]>/gi, '\n')
-    // Remove all other HTML tags
-    .replace(/<[^>]+>/g, '')
-    // Decode HTML entities
+  // STEP 1: Remove CDATA markers
+  let result = text.replace(/^<!\[CDATA\[|\]\]>$/g, '');
+  
+  // STEP 2: Decode HTML entities FIRST (before stripping tags!)
+  result = result
     .replace(/&nbsp;/g, ' ')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -146,12 +136,34 @@ function stripHtml(text) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&#x27;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(code))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
-    // Normalize whitespace
-    .replace(/\n\s*\n/g, '\n')
-    .replace(/[ \t]+/g, ' ')
+    .replace(/&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)));
+  
+  // STEP 3: Now strip HTML tags (after entities are decoded to actual < and >)
+  result = result
+    // Remove script and style contents
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // Convert block elements to newlines for readability
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    // Remove all remaining HTML tags
+    .replace(/<[^>]+>/g, '');
+  
+  // STEP 4: Normalize whitespace
+  result = result
+    .replace(/\n\s*\n\s*\n/g, '\n\n')  // Max 2 consecutive newlines
+    .replace(/[ \t]+/g, ' ')            // Multiple spaces to single
+    .replace(/\n /g, '\n')              // Remove leading space after newline
+    .replace(/ \n/g, '\n')              // Remove trailing space before newline
     .trim();
+  
+  return result;
 }
 
 // ============ State Management ============
