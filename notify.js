@@ -280,11 +280,10 @@ async function getOrCreateDailyPage(state) {
     is_inline: true,
     properties: {
       '제목': { title: {} },
+      '요약': { rich_text: {} },
       '벤더': { select: {} },
       '날짜': { date: {} },
-      '요약': { rich_text: {} },
-      'URL': { url: {} },
-      '소스': { select: {} }
+      'URL': { url: {} }
     }
   };
   
@@ -310,17 +309,15 @@ async function addToNotion(dbId, item, translatedSummary) {
     ? (item.pubDate instanceof Date ? item.pubDate.toISOString() : item.pubDate)
     : (item.release_date || item.created_at);
   const url = isRss ? item.link : `https://releasebot.io/updates/${item.product?.vendor?.slug || ''}`;
-  const source = isRss ? 'RSS' : 'Releasebot';
   
   const pagePayload = {
     parent: { database_id: dbId },
     properties: {
       '제목': { title: [{ text: { content: title.substring(0, 100) } }] },
+      '요약': { rich_text: [{ text: { content: (translatedSummary || '').substring(0, 2000) } }] },
       '벤더': { select: { name: vendor } },
       '날짜': { date: releaseDate ? { start: releaseDate.split('T')[0] } : null },
-      '요약': { rich_text: [{ text: { content: (translatedSummary || '').substring(0, 2000) } }] },
-      'URL': { url: url || null },
-      '소스': { select: { name: source } }
+      'URL': { url: url || null }
     }
   };
   
