@@ -24,16 +24,19 @@ function fetch(url) {
 }
 
 function translateToKorean(text) {
-  if (!DEEPL_API_KEY || !text) {
+  if (!DEEPL_API_KEY) {
+    console.log('    ⚠ DEEPL_API_KEY not set, skipping translation');
     return Promise.resolve(text);
   }
   
-  return new Promise((resolve, reject) => {
-    const postData = new URLSearchParams({
-      auth_key: DEEPL_API_KEY,
-      text: text,
-      target_lang: 'KO'
-    }).toString();
+  if (!text) {
+    return Promise.resolve(text);
+  }
+  
+  console.log(`    → Calling DeepL API (text length: ${text.length})`);
+  
+  return new Promise((resolve) => {
+    const postData = `auth_key=${encodeURIComponent(DEEPL_API_KEY)}&text=${encodeURIComponent(text)}&target_lang=KO`;
     
     const options = {
       hostname: 'api-free.deepl.com',
@@ -49,23 +52,25 @@ function translateToKorean(text) {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
+        console.log(`    → DeepL response status: ${res.statusCode}`);
         try {
           const result = JSON.parse(data);
           if (result.translations && result.translations[0]) {
+            console.log(`    ✓ Translation successful`);
             resolve(result.translations[0].text);
           } else {
-            console.warn('Translation failed, using original text');
+            console.warn(`    ⚠ Translation failed: ${JSON.stringify(result)}`);
             resolve(text);
           }
         } catch (e) {
-          console.warn(`Translation parse error: ${e.message}`);
+          console.warn(`    ⚠ Translation parse error: ${e.message}, response: ${data.substring(0, 200)}`);
           resolve(text);
         }
       });
     });
     
     req.on('error', (e) => {
-      console.warn(`Translation request error: ${e.message}`);
+      console.warn(`    ⚠ Translation request error: ${e.message}`);
       resolve(text);
     });
     
@@ -123,7 +128,7 @@ async function formatRelease(release) {
   
   // Translate summary to Korean
   if (summary) {
-    console.log('  Translating summary to Korean...');
+    console.log('  📝 Translating summary to Korean...');
     summary = await translateToKorean(summary);
   }
   
@@ -178,14 +183,17 @@ async function sleep(ms) {
 }
 
 async function main() {
+  console.log('=== Releasebot Slack Notifier ===\n');
+  
   if (!SLACK_BOT_TOKEN) {
-    console.error('Error: SLACK_BOT_TOKEN environment variable is required');
+    console.error('❌ Error: SLACK_BOT_TOKEN environment variable is required');
     process.exit(1);
   }
   
-  if (!DEEPL_API_KEY) {
-    console.warn('Warning: DEEPL_API_KEY not set, translations will be skipped');
-  }
+  console.log(`✓ SLACK_BOT_TOKEN: set`);
+  console.log(`✓ SLACK_CHANNEL_ID: ${SLACK_CHANNEL_ID}`);
+  console.log(`✓ DEEPL_API_KEY: ${DEEPL_API_KEY ? 'set (' + DEEPL_API_KEY.substring(0, 8) + '...)' : 'NOT SET'}`);
+  console.log('');
   
   // Load last seen ID
   let lastSeenId = 0;
@@ -210,7 +218,7 @@ async function main() {
     .filter(r => r.id > lastSeenId)
     .sort((a, b) => a.id - b.id); // Oldest first
   
-  console.log(`New releases to notify: ${newReleases.length}`);
+  console.log(`New releases to notify: ${newReleases.length}\n`);
   
   if (newReleases.length === 0) {
     console.log('No new releases found');
@@ -229,14 +237,14 @@ async function main() {
     try {
       await postToSlack(SLACK_CHANNEL_ID, blocks, text);
       lastSeenId = release.id;
-      console.log(`  ✓ Posted successfully (ID: ${release.id})`);
+      console.log(`  ✓ Posted successfully (ID: ${release.id})\n`);
     } catch (error) {
-      console.error(`  ✗ Failed to post: ${error.message}`);
+      console.error(`  ✗ Failed to post: ${error.message}\n`);
       // Continue with next release
     }
     
-    // Rate limiting: wait 1 second between messages
-    await sleep(1000);
+    // Rate limiting: wait 1.5 seconds between messages
+    await sleep(1500);
   }
   
   // Save last seen ID
