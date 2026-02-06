@@ -240,55 +240,17 @@ function getTodayString() {
   return kst.toISOString().split('T')[0]; // YYYY-MM-DD
 }
 
-function getYesterdayRange() {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
-  
-  // Yesterday start (00:00:00 KST)
-  const yesterdayStart = new Date(kst);
-  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-  yesterdayStart.setHours(0, 0, 0, 0);
-  
-  // Yesterday end (23:59:59 KST)
-  const yesterdayEnd = new Date(kst);
-  yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
-  yesterdayEnd.setHours(23, 59, 59, 999);
-  
-  // Convert back to UTC for comparison
-  const startUtc = new Date(yesterdayStart.getTime() - (9 * 60 * 60 * 1000));
-  const endUtc = new Date(yesterdayEnd.getTime() - (9 * 60 * 60 * 1000));
-  
-  return { start: startUtc, end: endUtc };
-}
-
-function isYesterday(date) {
-  if (!date) return false;
-  const d = date instanceof Date ? date : new Date(date);
-  if (isNaN(d.getTime())) return false;
-  
-  const { start, end } = getYesterdayRange();
-  return d >= start && d <= end;
-}
-
-function getYesterdayString() {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9
-  kst.setDate(kst.getDate() - 1);
-  return kst.toISOString().split('T')[0]; // YYYY-MM-DD
-}
-
 async function getOrCreateDailyPage(state) {
-  const yesterday = getYesterdayString();
-  const pageTitle = `${yesterday} 신규 배포`;
+  const today = getTodayString();
+  const pageTitle = `${today} 신규 배포`;
   
-  if (state.notion?.dailyPageId && state.notion?.dailyPageDate === yesterday) {
+  if (state.notion?.dailyPageId && state.notion?.dailyPageDate === today) {
     console.log(`  → Using existing daily page: ${pageTitle}`);
     return { pageId: state.notion.dailyPageId, dbId: state.notion.dailyDbId };
   }
   
   console.log(`  → Creating daily page: ${pageTitle}`);
   
-  // Create new page for today
   const pagePayload = {
     parent: { page_id: NOTION_PAGE_ID },
     properties: {
@@ -311,7 +273,6 @@ async function getOrCreateDailyPage(state) {
   const pageId = page.id;
   console.log(`  ✓ Created page: ${pageId}`);
   
-  // Create database inside the page
   console.log(`  → Creating database inside page...`);
   const dbPayload = {
     parent: { page_id: pageId },
@@ -334,7 +295,7 @@ async function getOrCreateDailyPage(state) {
   state.notion = {
     dailyPageId: pageId,
     dailyDbId: dbId,
-    dailyPageDate: yesterday
+    dailyPageDate: today
   };
   
   return { pageId, dbId };
@@ -531,12 +492,9 @@ async function processReleasebotFeed(state) {
   const releases = data.releases || [];
   const newReleases = releases
     .filter(r => r.id > lastSeenId)
-    .filter(r => isYesterday(r.release_date || r.created_at))
     .sort((a, b) => a.id - b.id);
   
-  const { start, end } = getYesterdayRange();
-  console.log(`  Filtering for yesterday: ${start.toISOString()} ~ ${end.toISOString()}`);
-  console.log(`  New releases from yesterday: ${newReleases.length}`);
+  console.log(`  New releases: ${newReleases.length}`);
   
   const processed = [];
   for (const release of newReleases) {
@@ -571,12 +529,9 @@ async function processRssFeeds(state, feedsConfig) {
       const feedState = state.rss[feed.id] || { seenIds: [] };
       const seenSet = new Set(feedState.seenIds || []);
       
-      const newItems = items
-        .filter(item => !seenSet.has(item.id))
-        .filter(item => isYesterday(item.pubDate));
-      console.log(`    Found ${items.length} items, ${newItems.length} from yesterday`);
+      const newItems = items.filter(item => !seenSet.has(item.id));
+      console.log(`    Found ${items.length} items, ${newItems.length} new`);
       
-      // Limit to most recent 5 new items per feed
       const limitedItems = newItems.slice(0, 5);
       
       for (const item of limitedItems) {
@@ -584,7 +539,6 @@ async function processRssFeeds(state, feedsConfig) {
         seenSet.add(item.id);
       }
       
-      // Keep only last 100 seen IDs per feed
       state.rss[feed.id] = {
         seenIds: Array.from(seenSet).slice(-100)
       };
@@ -613,9 +567,7 @@ async function main() {
   console.log(`  SLACK_CHANNEL_ID: ${SLACK_CHANNEL_ID}`);
   console.log(`  DEEPL_API_KEY: ${DEEPL_API_KEY ? 'set' : 'NOT SET'}`);
   console.log(`  NOTION_API_TOKEN: ${NOTION_API_TOKEN ? 'set' : 'NOT SET'}`);
-  console.log(`  Filtering: Yesterday only (${getYesterdayString()})`);
   
-  // Load state and feeds config
   const state = loadState();
   if (!state.rss) state.rss = {};
   if (!state.releasebot) state.releasebot = { lastSeenId: 0 };
@@ -623,7 +575,6 @@ async function main() {
   
   const feedsConfig = loadFeeds();
   
-  // Process all feeds first
   const releasebotItems = await processReleasebotFeed(state);
   const rssItems = await processRssFeeds(state, feedsConfig);
   
@@ -637,7 +588,6 @@ async function main() {
     return;
   }
   
-  // Initialize Notion daily page if needed
   let notionDbId = null;
   if (NOTION_API_TOKEN) {
     try {
@@ -648,14 +598,12 @@ async function main() {
     }
   }
   
-  // Process each item
   for (const item of allItems) {
     const isRss = item.feedType === 'rss';
     const itemName = isRss ? item.title.substring(0, 50) : (item.product?.display_name || 'Unknown');
     
     console.log(`\nProcessing: ${itemName}...`);
     
-    // Get summary and translate
     const summary = isRss ? item.summary : (item.release_details?.release_summary || '');
     let translatedSummary = summary;
     if (summary && DEEPL_API_KEY) {
@@ -663,7 +611,6 @@ async function main() {
       translatedSummary = await translateToKorean(summary.substring(0, 1500));
     }
     
-    // Post to Slack
     try {
       const { blocks, text } = formatSlackMessage(item, translatedSummary);
       await postToSlack(SLACK_CHANNEL_ID, blocks, text);
@@ -672,7 +619,6 @@ async function main() {
       console.error(`  ✗ Slack: ${e.message}`);
     }
     
-    // Add to Notion
     if (notionDbId) {
       try {
         await addToNotion(notionDbId, item, translatedSummary);
@@ -685,7 +631,6 @@ async function main() {
     await sleep(1500);
   }
   
-  // Save state
   saveState(state);
   console.log('\n✓ State saved');
 }
