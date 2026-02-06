@@ -291,6 +291,20 @@ async function getOrCreateDailyPage(state) {
   const dbId = db.id;
   console.log(`  ✓ Created database: ${dbId}`);
   
+  console.log(`  → Setting column order...`);
+  const updatePayload = {
+    properties: {
+      '제목': { title: {} },
+      '요약': { rich_text: {} },
+      '벤더': { select: {} },
+      '날짜': { date: {} },
+      'URL': { url: {} }
+    }
+  };
+  
+  await notionRequest('PATCH', `/v1/databases/${dbId}`, updatePayload);
+  console.log(`  ✓ Column order set`);
+  
   state.notion = {
     dailyPageId: pageId,
     dailyDbId: dbId,
