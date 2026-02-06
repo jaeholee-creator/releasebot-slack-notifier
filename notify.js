@@ -36,14 +36,19 @@ function translateToKorean(text) {
   console.log(`    → Calling DeepL API (text length: ${text.length})`);
   
   return new Promise((resolve) => {
-    const postData = `auth_key=${encodeURIComponent(DEEPL_API_KEY)}&text=${encodeURIComponent(text)}&target_lang=KO`;
+    // New DeepL API format: header-based authentication
+    const postData = JSON.stringify({
+      text: [text],
+      target_lang: 'KO'
+    });
     
     const options = {
       hostname: 'api-free.deepl.com',
       path: '/v2/translate',
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `DeepL-Auth-Key ${DEEPL_API_KEY}`,
+        'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
       }
     };
