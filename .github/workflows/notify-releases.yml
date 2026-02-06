@@ -6,6 +6,9 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch: # 수동 실행 가능
 
+permissions:
+  contents: write
+
 jobs:
   check-releases:
     runs-on: ubuntu-latest
