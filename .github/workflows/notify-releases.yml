@@ -22,18 +22,20 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Check releases and notify Slack
+      - name: Check releases and notify
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           RELEASEBOT_URL: ${{ secrets.RELEASEBOT_URL }}
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+          NOTION_API_TOKEN: ${{ secrets.NOTION_API_TOKEN }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
         run: node notify.js
       
       - name: Commit updated state
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add last_seen_id.txt
-          git diff --staged --quiet || git commit -m "Update last seen release ID [skip ci]"
+          git add last_seen_id.txt notion_db_id.txt 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Update state files [skip ci]"
           git push
