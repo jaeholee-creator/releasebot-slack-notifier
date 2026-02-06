@@ -19,13 +19,18 @@
         "https://openai.com/index/inside-our-in-house-data-agent",
         "https://openai.com/index/retiring-gpt-4o-and-older-models",
         "https://openai.com/index/taisei",
-        "https://openai.com/index/emea-youth-and-wellbeing-grant"
+        "https://openai.com/index/emea-youth-and-wellbeing-grant",
+        "https://openai.com/index/the-next-chapter-for-ai-in-the-eu",
+        "https://openai.com/index/ai-agent-link-safety",
+        "https://openai.com/index/pvh-future-of-fashion",
+        "https://openai.com/index/trustbank",
+        "https://openai.com/index/introducing-prism"
       ],
-      "lastUpdated": "2026-02-06T11:53:31.830Z"
+      "lastUpdated": "2026-02-06T14:27:53.668Z"
     },
     "github-changelog": {
       "seenIds": [],
-      "lastUpdated": "2026-02-06T11:53:32.527Z"
+      "lastUpdated": "2026-02-06T14:27:53.972Z"
     },
     "google-workspace": {
       "seenIds": [
@@ -43,9 +48,14 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-8015714511070396628",
         "tag:blogger.com,1999:blog-5245696872621940063.post-2817784574777663983",
         "tag:blogger.com,1999:blog-5245696872621940063.post-8722287606295689245",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5782810314329278348"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-5782810314329278348",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3390825777096161489",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2416831898192929823",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-5211649861443275634",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8198370665322455917",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-6988890065492675826"
       ],
-      "lastUpdated": "2026-02-06T11:53:32.787Z"
+      "lastUpdated": "2026-02-06T14:27:54.540Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -58,9 +68,11 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.4.8-exp.0",
         "tag:github.com,2008:Repository/193215554/n8n@2.4.7-exp.0",
         "tag:github.com,2008:Repository/193215554/n8n@2.4.6-exp.0",
-        "tag:github.com,2008:Repository/193215554/n8n@1.123.18"
+        "tag:github.com,2008:Repository/193215554/n8n@1.123.18",
+        "tag:github.com,2008:Repository/193215554/n8n@2.6.4",
+        "tag:github.com,2008:Repository/193215554/n8n@1.123.20"
       ],
-      "lastUpdated": "2026-02-06T11:53:33.545Z"
+      "lastUpdated": "2026-02-06T14:27:55.293Z"
     }
   },
   "notion": {
