@@ -11,6 +11,11 @@ const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028
 const STATE_FILE = 'feed_state.json';
 const FEEDS_FILE = 'feeds.json';
 
+// Configuration
+const RETENTION_DAYS = 30;  // Only process items from last 30 days
+const MAX_SEEN_IDS = 30;    // Keep only last 30 seen IDs per feed
+const MAX_ITEMS_PER_FEED = 5;  // Max items to process per feed per run
+
 // ============ HTTP Utilities ============
 
 function fetchUrl(url) {
@@ -492,11 +497,20 @@ async function processReleasebotFeed(state) {
   }
   
   const releases = data.releases || [];
+  console.log(`  Total releases in API: ${releases.length}`);
+  if (releases.length > 0) {
+    console.log(`  Latest release ID in API: ${releases[0].id}`);
+  }
+  
   const newReleases = releases
     .filter(r => r.id > lastSeenId)
     .sort((a, b) => a.id - b.id);
   
   console.log(`  New releases: ${newReleases.length}`);
+  
+  if (newReleases.length === 0 && releases.length > 0) {
+    console.log(`  ⚠️ No new releases found. API may not be updating or lastSeenId is current.`);
+  }
   
   const processed = [];
   for (const release of newReleases) {
@@ -517,10 +531,17 @@ async function processRssFeeds(state, feedsConfig) {
   
   console.log(`\n📡 Processing ${rssFeeds.length} RSS feed(s)...`);
   
+  // Calculate cutoff date for filtering old items
+  const cutoffDate = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  console.log(`  Retention cutoff: ${cutoffDate.toISOString().split('T')[0]} (${RETENTION_DAYS} days)`);
+  
   const allItems = [];
   
   for (const feed of rssFeeds) {
-    if (!feed.enabled) continue;
+    if (!feed.enabled) {
+      console.log(`  → ${feed.name}: DISABLED`);
+      continue;
+    }
     
     console.log(`  → ${feed.name}`);
     
@@ -528,21 +549,44 @@ async function processRssFeeds(state, feedsConfig) {
       const xml = await fetchUrl(feed.url);
       const items = parseRssFeed(xml, feed);
       
+      console.log(`    RSS items fetched: ${items.length}`);
+      
       const feedState = state.rss[feed.id] || { seenIds: [] };
       const seenSet = new Set(feedState.seenIds || []);
       
-      const newItems = items.filter(item => !seenSet.has(item.id));
-      console.log(`    Found ${items.length} items, ${newItems.length} new`);
+      console.log(`    Already tracked IDs: ${seenSet.size}`);
       
-      const limitedItems = newItems.slice(0, 5);
+      // Filter: not seen AND within retention period
+      const newItems = items.filter(item => {
+        const isNotSeen = !seenSet.has(item.id);
+        const isRecent = item.pubDate && item.pubDate > cutoffDate;
+        return isNotSeen && isRecent;
+      });
+      
+      console.log(`    New items (not seen & recent): ${newItems.length}`);
+      
+      if (newItems.length > 0) {
+        console.log(`    Latest: "${newItems[0].title.substring(0, 50)}..."`);
+        console.log(`    Published: ${newItems[0].pubDate.toISOString()}`);
+      } else if (items.length > 0) {
+        console.log(`    ⚠️ All items either already seen or too old`);
+      }
+      
+      // Limit items per run to avoid spam
+      const limitedItems = newItems.slice(0, MAX_ITEMS_PER_FEED);
+      if (newItems.length > MAX_ITEMS_PER_FEED) {
+        console.log(`    ⚠️ Limiting to ${MAX_ITEMS_PER_FEED} items (${newItems.length - MAX_ITEMS_PER_FEED} will be picked up next run)`);
+      }
       
       for (const item of limitedItems) {
         allItems.push(item);
         seenSet.add(item.id);
       }
       
+      // Keep only recent seen IDs to prevent memory bloat
       state.rss[feed.id] = {
-        seenIds: Array.from(seenSet).slice(-100)
+        seenIds: Array.from(seenSet).slice(-MAX_SEEN_IDS),
+        lastUpdated: new Date().toISOString()
       };
       
     } catch (e) {
@@ -558,17 +602,22 @@ async function sleep(ms) {
 }
 
 async function main() {
-  console.log('=== Release Notifier (Releasebot + RSS) ===\n');
+  console.log('='.repeat(60));
+  console.log('=== Release Notifier (Releasebot + RSS) ===');
+  console.log(`=== Started: ${new Date().toISOString()} ===`);
+  console.log('='.repeat(60));
   
   if (!SLACK_BOT_TOKEN) {
     console.error('❌ Error: SLACK_BOT_TOKEN is required');
     process.exit(1);
   }
   
-  console.log('Configuration:');
+  console.log('\n📋 Configuration:');
   console.log(`  SLACK_CHANNEL_ID: ${SLACK_CHANNEL_ID}`);
   console.log(`  DEEPL_API_KEY: ${DEEPL_API_KEY ? 'set' : 'NOT SET'}`);
   console.log(`  NOTION_API_TOKEN: ${NOTION_API_TOKEN ? 'set' : 'NOT SET'}`);
+  console.log(`  RETENTION_DAYS: ${RETENTION_DAYS}`);
+  console.log(`  MAX_ITEMS_PER_FEED: ${MAX_ITEMS_PER_FEED}`);
   
   const state = loadState();
   if (!state.rss) state.rss = {};
@@ -587,6 +636,8 @@ async function main() {
   if (allItems.length === 0) {
     console.log('No new items found');
     saveState(state);
+    console.log('\n✓ State saved');
+    printSummary(0, 0, 0, 0);
     return;
   }
   
@@ -595,9 +646,14 @@ async function main() {
     try {
       notionPageId = await getOrCreateDailyPage(state);
     } catch (e) {
-      console.error(`  Notion setup failed: ${e.message}`);
+      console.error(`  ✗ Notion setup failed: ${e.message}`);
     }
   }
+  
+  let slackSuccessCount = 0;
+  let slackFailCount = 0;
+  let notionSuccessCount = 0;
+  let notionFailCount = 0;
   
   for (const item of allItems) {
     const isRss = item.feedType === 'rss';
@@ -616,16 +672,20 @@ async function main() {
       const { blocks, text } = formatSlackMessage(item, translatedSummary);
       await postToSlack(SLACK_CHANNEL_ID, blocks, text);
       console.log('  ✓ Slack: Posted');
+      slackSuccessCount++;
     } catch (e) {
       console.error(`  ✗ Slack: ${e.message}`);
+      slackFailCount++;
     }
     
     if (notionPageId) {
       try {
         await addToNotion(notionPageId, item, translatedSummary);
         console.log('  ✓ Notion: Added');
+        notionSuccessCount++;
       } catch (e) {
         console.error(`  ✗ Notion: ${e.message}`);
+        notionFailCount++;
       }
     }
     
@@ -634,6 +694,18 @@ async function main() {
   
   saveState(state);
   console.log('\n✓ State saved');
+  
+  printSummary(slackSuccessCount, slackFailCount, notionSuccessCount, notionFailCount);
+}
+
+function printSummary(slackSuccess, slackFail, notionSuccess, notionFail) {
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 EXECUTION SUMMARY');
+  console.log('='.repeat(60));
+  console.log(`Slack:  ${slackSuccess} succeeded, ${slackFail} failed`);
+  console.log(`Notion: ${notionSuccess} succeeded, ${notionFail} failed`);
+  console.log(`Completed: ${new Date().toISOString()}`);
+  console.log('='.repeat(60));
 }
 
 main().catch(error => {
