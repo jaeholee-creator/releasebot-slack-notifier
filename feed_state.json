@@ -5,11 +5,6 @@
   "rss": {
     "openai-news": {
       "seenIds": [
-        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
-        "https://openai.com/index/trusted-access-for-cyber",
-        "https://openai.com/index/introducing-openai-frontier",
-        "https://openai.com/index/gpt-5-3-codex-system-card",
-        "https://openai.com/index/introducing-gpt-5-3-codex",
         "https://openai.com/index/navigating-health-questions",
         "https://openai.com/index/unlocking-the-codex-harness",
         "https://openai.com/index/vfl-wolfsburg",
@@ -34,13 +29,18 @@
         "https://openai.com/index/our-approach-to-localization",
         "https://openai.com/index/higgsfield",
         "https://openai.com/index/edu-for-countries",
-        "https://openai.com/index/how-countries-can-end-the-capability-overhang"
+        "https://openai.com/index/how-countries-can-end-the-capability-overhang",
+        "https://openai.com/index/horizon-1000",
+        "https://openai.com/index/stargate-community",
+        "https://openai.com/index/cisco",
+        "https://openai.com/index/servicenow-powers-actionable-enterprise-ai-with-openai",
+        "https://openai.com/index/our-approach-to-age-prediction"
       ],
-      "lastUpdated": "2026-02-06T19:11:26.715Z"
+      "lastUpdated": "2026-02-06T21:00:45.407Z"
     },
     "github-changelog": {
       "seenIds": [],
-      "lastUpdated": "2026-02-06T19:11:27.073Z"
+      "lastUpdated": "2026-02-06T21:00:45.661Z"
     },
     "google-workspace": {
       "seenIds": [
@@ -68,9 +68,10 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-8615876160053791050",
         "tag:blogger.com,1999:blog-5245696872621940063.post-999859103740790284",
         "tag:blogger.com,1999:blog-5245696872621940063.post-5877882879322768806",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2858310777368041594"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2858310777368041594",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763"
       ],
-      "lastUpdated": "2026-02-06T19:11:27.508Z"
+      "lastUpdated": "2026-02-06T21:00:46.222Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -87,7 +88,7 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.6.4",
         "tag:github.com,2008:Repository/193215554/n8n@1.123.20"
       ],
-      "lastUpdated": "2026-02-06T19:11:28.004Z"
+      "lastUpdated": "2026-02-06T21:00:47.279Z"
     }
   },
   "notion": {
