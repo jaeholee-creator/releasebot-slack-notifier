@@ -1,6 +1,6 @@
 {
   "releasebot": {
-    "lastSeenId": 14567
+    "lastSeenId": 14650
   },
   "rss": {
     "openai-news": {
@@ -9,13 +9,18 @@
         "https://openai.com/index/trusted-access-for-cyber",
         "https://openai.com/index/introducing-openai-frontier",
         "https://openai.com/index/gpt-5-3-codex-system-card",
-        "https://openai.com/index/introducing-gpt-5-3-codex"
+        "https://openai.com/index/introducing-gpt-5-3-codex",
+        "https://openai.com/index/navigating-health-questions",
+        "https://openai.com/index/unlocking-the-codex-harness",
+        "https://openai.com/index/vfl-wolfsburg",
+        "https://openai.com/index/sora-feed-philosophy",
+        "https://openai.com/index/snowflake-partnership"
       ],
-      "lastUpdated": "2026-02-06T07:58:49.128Z"
+      "lastUpdated": "2026-02-06T10:07:24.500Z"
     },
     "github-changelog": {
       "seenIds": [],
-      "lastUpdated": "2026-02-06T07:58:49.376Z"
+      "lastUpdated": "2026-02-06T10:07:24.798Z"
     },
     "google-workspace": {
       "seenIds": [
@@ -23,9 +28,14 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-3840825528764042752",
         "tag:blogger.com,1999:blog-5245696872621940063.post-8895218584162291947",
         "tag:blogger.com,1999:blog-5245696872621940063.post-4999999193544403922",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3351997211355408631"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3351997211355408631",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-6102898850216675495",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685"
       ],
-      "lastUpdated": "2026-02-06T07:58:49.729Z"
+      "lastUpdated": "2026-02-06T10:07:25.002Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -33,9 +43,14 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
         "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
-        "tag:github.com,2008:Repository/193215554/n8n@2.4.8"
+        "tag:github.com,2008:Repository/193215554/n8n@2.4.8",
+        "tag:github.com,2008:Repository/193215554/n8n@1.123.19",
+        "tag:github.com,2008:Repository/193215554/n8n@2.4.8-exp.0",
+        "tag:github.com,2008:Repository/193215554/n8n@2.4.7-exp.0",
+        "tag:github.com,2008:Repository/193215554/n8n@2.4.6-exp.0",
+        "tag:github.com,2008:Repository/193215554/n8n@1.123.18"
       ],
-      "lastUpdated": "2026-02-06T07:58:50.569Z"
+      "lastUpdated": "2026-02-06T10:07:25.542Z"
     }
   },
   "notion": {
