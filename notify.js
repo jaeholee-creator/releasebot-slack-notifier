@@ -125,11 +125,17 @@ function postToSlack(channel, blocks, text) {
 async function formatRelease(release) {
   const product = release.product?.display_name || 'Unknown Product';
   const vendor = release.product?.vendor?.display_name || '';
+  const vendorSlug = release.product?.vendor?.slug || '';
   let summary = release.release_details?.release_summary || '';
   const version = release.release_details?.release_number || release.release_details?.release_name || '';
   const releaseDate = release.release_date 
     ? new Date(release.release_date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
     : '';
+  
+  // Build URL to Releasebot page
+  const releasebotUrl = vendorSlug 
+    ? `https://releasebot.io/updates/${vendorSlug}`
+    : 'https://releasebot.io/updates';
   
   // Translate summary to Korean
   if (summary) {
@@ -164,6 +170,23 @@ async function formatRelease(release) {
       }
     });
   }
+  
+  // Add "View Details" button
+  blocks.push({
+    type: 'actions',
+    elements: [
+      {
+        type: 'button',
+        text: {
+          type: 'plain_text',
+          text: '📖 자세히 보기',
+          emoji: true
+        },
+        url: releasebotUrl,
+        action_id: 'view_release'
+      }
+    ]
+  });
   
   if (releaseDate) {
     blocks.push({
