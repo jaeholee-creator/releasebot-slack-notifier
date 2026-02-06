@@ -35,7 +35,12 @@
         "https://openai.com/index/how-countries-can-end-the-capability-overhang",
         "https://openai.com/index/horizon-1000",
         "https://openai.com/index/stargate-community",
-        "https://openai.com/index/cisco"
+        "https://openai.com/index/cisco",
+        "https://openai.com/index/servicenow-powers-actionable-enterprise-ai-with-openai",
+        "https://openai.com/index/our-approach-to-age-prediction",
+        "https://openai.com/index/ai-for-self-empowerment",
+        "https://openai.com/index/a-business-that-scales-with-the-value-of-intelligence",
+        "https://openai.com/index/the-truth-elon-left-out"
       ]
     },
     "github-changelog": {
@@ -85,5 +90,8 @@
       ]
     }
   },
-  "notion": {}
+  "notion": {
+    "dailyPageId": "2ff686b4-9b3b-81ac-ac53-efdf6c7ebdb7",
+    "dailyPageDate": "2026-02-06"
+  }
 }
