@@ -5,11 +5,6 @@
   "rss": {
     "openai-news": {
       "seenIds": [
-        "https://openai.com/index/introducing-the-codex-app",
-        "https://openai.com/index/inside-our-in-house-data-agent",
-        "https://openai.com/index/retiring-gpt-4o-and-older-models",
-        "https://openai.com/index/taisei",
-        "https://openai.com/index/emea-youth-and-wellbeing-grant",
         "https://openai.com/index/the-next-chapter-for-ai-in-the-eu",
         "https://openai.com/index/ai-agent-link-safety",
         "https://openai.com/index/pvh-future-of-fashion",
@@ -34,13 +29,18 @@
         "https://openai.com/index/trusted-access-for-cyber",
         "https://openai.com/index/introducing-openai-frontier",
         "https://openai.com/index/introducing-gpt-5-3-codex",
-        "https://openai.com/index/gpt-5-3-codex-system-card"
+        "https://openai.com/index/gpt-5-3-codex-system-card",
+        "https://openai.com/index/navigating-health-questions",
+        "https://openai.com/index/unlocking-the-codex-harness",
+        "https://openai.com/index/vfl-wolfsburg",
+        "https://openai.com/index/sora-feed-philosophy",
+        "https://openai.com/index/snowflake-partnership"
       ],
-      "lastUpdated": "2026-02-06T21:57:36.660Z"
+      "lastUpdated": "2026-02-06T22:53:02.550Z"
     },
     "github-changelog": {
       "seenIds": [],
-      "lastUpdated": "2026-02-06T21:57:37.210Z"
+      "lastUpdated": "2026-02-06T22:53:03.020Z"
     },
     "google-workspace": {
       "seenIds": [
@@ -71,7 +71,7 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-2858310777368041594",
         "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763"
       ],
-      "lastUpdated": "2026-02-06T21:57:37.901Z"
+      "lastUpdated": "2026-02-06T22:53:03.515Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -88,7 +88,7 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.6.4",
         "tag:github.com,2008:Repository/193215554/n8n@1.123.20"
       ],
-      "lastUpdated": "2026-02-06T21:57:38.627Z"
+      "lastUpdated": "2026-02-06T22:53:04.463Z"
     }
   },
   "notion": {
