@@ -1,0 +1,11 @@
+{
+  "name": "releasebot-slack-notifier",
+  "version": "1.0.0",
+  "description": "Releasebot.io feed to Slack channel notifier",
+  "main": "notify.js",
+  "scripts": {
+    "start": "node notify.js"
+  },
+  "keywords": ["slack", "releasebot", "notifications"],
+  "license": "MIT"
+}
