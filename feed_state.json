@@ -15,7 +15,12 @@
         "https://openai.com/index/vfl-wolfsburg",
         "https://openai.com/index/sora-feed-philosophy",
         "https://openai.com/index/snowflake-partnership",
-        "https://openai.com/index/introducing-the-codex-app"
+        "https://openai.com/index/introducing-the-codex-app",
+        "https://openai.com/index/inside-our-in-house-data-agent",
+        "https://openai.com/index/retiring-gpt-4o-and-older-models",
+        "https://openai.com/index/taisei",
+        "https://openai.com/index/emea-youth-and-wellbeing-grant",
+        "https://openai.com/index/the-next-chapter-for-ai-in-the-eu"
       ]
     },
     "github-changelog": {
@@ -32,7 +37,12 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1249794266030588923",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8015714511070396628",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2817784574777663983",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8722287606295689245",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-5782810314329278348"
       ]
     },
     "n8n-releases": {
