@@ -14,13 +14,18 @@
         "https://openai.com/index/unlocking-the-codex-harness",
         "https://openai.com/index/vfl-wolfsburg",
         "https://openai.com/index/sora-feed-philosophy",
-        "https://openai.com/index/snowflake-partnership"
+        "https://openai.com/index/snowflake-partnership",
+        "https://openai.com/index/introducing-the-codex-app",
+        "https://openai.com/index/inside-our-in-house-data-agent",
+        "https://openai.com/index/retiring-gpt-4o-and-older-models",
+        "https://openai.com/index/taisei",
+        "https://openai.com/index/emea-youth-and-wellbeing-grant"
       ],
-      "lastUpdated": "2026-02-06T10:07:24.500Z"
+      "lastUpdated": "2026-02-06T11:53:31.830Z"
     },
     "github-changelog": {
       "seenIds": [],
-      "lastUpdated": "2026-02-06T10:07:24.798Z"
+      "lastUpdated": "2026-02-06T11:53:32.527Z"
     },
     "google-workspace": {
       "seenIds": [
@@ -33,9 +38,14 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1249794266030588923",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8015714511070396628",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2817784574777663983",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-8722287606295689245",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-5782810314329278348"
       ],
-      "lastUpdated": "2026-02-06T10:07:25.002Z"
+      "lastUpdated": "2026-02-06T11:53:32.787Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -50,7 +60,7 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.4.6-exp.0",
         "tag:github.com,2008:Repository/193215554/n8n@1.123.18"
       ],
-      "lastUpdated": "2026-02-06T10:07:25.542Z"
+      "lastUpdated": "2026-02-06T11:53:33.545Z"
     }
   },
   "notion": {
