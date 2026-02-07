@@ -1,0 +1,112 @@
+{
+  "profile_version": "1.0",
+  "last_updated": "2026-02-07",
+  "description": "사용자의 현재 개발 환경 프로파일 - 릴리스 분석에 활용",
+  
+  "cli_tool": {
+    "name": "OpenCode",
+    "type": "Terminal CLI",
+    "version": "latest",
+    "plugins": [
+      "opencode-antigravity-auth@beta",
+      "oh-my-opencode@latest",
+      "@tarquinen/opencode-dcp@latest"
+    ]
+  },
+  
+  "mcp_servers": {
+    "playwright": {
+      "description": "브라우저 자동화 및 테스트",
+      "package": "@playwright/mcp",
+      "keywords": ["browser", "automation", "testing", "screenshot", "web"]
+    },
+    "filesystem": {
+      "description": "파일 시스템 접근",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "keywords": ["file", "directory", "read", "write"]
+    },
+    "context7": {
+      "description": "라이브러리 문서 검색",
+      "package": "context7 (remote)",
+      "keywords": ["docs", "documentation", "library", "api"]
+    },
+    "sequential-thinking": {
+      "description": "단계별 사고 및 분석",
+      "package": "@modelcontextprotocol/server-sequential-thinking",
+      "keywords": ["thinking", "reasoning", "analysis"]
+    },
+    "github": {
+      "description": "GitHub API 연동",
+      "package": "@modelcontextprotocol/server-github",
+      "keywords": ["github", "git", "repository", "pr", "issue"]
+    },
+    "memory": {
+      "description": "지식 그래프 저장",
+      "package": "@modelcontextprotocol/server-memory",
+      "keywords": ["memory", "knowledge", "graph", "entity"]
+    },
+    "notion-epic-tracker": {
+      "description": "Notion 에픽 트래커 연동",
+      "package": "custom (notion-epic-tracker)",
+      "keywords": ["notion", "epic", "tracker", "project"]
+    }
+  },
+  
+  "ai_models": {
+    "claude-opus-4.6": {
+      "usage": ["sisyphus", "prometheus", "metis", "momus"],
+      "purpose": "메인 코딩, 전략 계획, 품질 검토"
+    },
+    "claude-sonnet-4.5": {
+      "usage": ["librarian", "atlas"],
+      "purpose": "문서 검색, 범용 지원"
+    },
+    "claude-haiku-4.5": {
+      "usage": ["explore", "quick"],
+      "purpose": "빠른 탐색, 간단한 작업"
+    },
+    "gemini-3-pro": {
+      "usage": ["oracle", "artistry"],
+      "purpose": "아키텍처 상담, 창의적 문제 해결"
+    },
+    "gemini-3-flash": {
+      "usage": ["multimodal-looker"],
+      "purpose": "이미지/PDF 분석"
+    },
+    "gpt-5.3-codex": {
+      "usage": ["hephaestus", "deep"],
+      "purpose": "고급 코드 생성"
+    }
+  },
+  
+  "agent_system": {
+    "sisyphus": "메인 빌더 - 구현 및 코딩",
+    "oracle": "아키텍처 및 디버깅 상담",
+    "librarian": "문서 및 코드 검색",
+    "explore": "코드베이스 탐색",
+    "prometheus": "전략적 계획 수립",
+    "metis": "사전 계획 분석",
+    "momus": "계획 품질 검토",
+    "hephaestus": "고급 코드 생성",
+    "atlas": "범용 어시스턴트"
+  },
+  
+  "technology_stack": [
+    "Node.js",
+    "TypeScript",
+    "Python",
+    "React",
+    "Next.js"
+  ],
+  
+  "interests": [
+    "AI/ML 도구 및 API",
+    "CLI 개발 도구",
+    "MCP (Model Context Protocol)",
+    "LLM 에이전트 시스템",
+    "브라우저 자동화",
+    "Notion 연동",
+    "GitHub 연동",
+    "생산성 도구"
+  ]
+}
