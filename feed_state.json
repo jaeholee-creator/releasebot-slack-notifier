@@ -2,6 +2,24 @@
   "releasebot": {
     "lastSeenId": 0
   },
-  "rss": {},
-  "notion": {}
+  "rss": {
+    "openai-news": {
+      "seenIds": [],
+      "lastUpdated": "2026-02-07T04:24:33.630Z"
+    },
+    "google-workspace": {
+      "seenIds": [
+        "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763"
+      ],
+      "lastUpdated": "2026-02-07T04:24:34.618Z"
+    },
+    "n8n-releases": {
+      "seenIds": [],
+      "lastUpdated": "2026-02-07T04:24:35.304Z"
+    }
+  },
+  "notion": {
+    "dailyPageId": "300686b4-9b3b-81ad-86d9-cacdc7798fe5",
+    "dailyPageDate": "2026-02-07"
+  }
 }
