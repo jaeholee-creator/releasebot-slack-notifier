@@ -5,17 +5,17 @@
   "rss": {
     "openai-news": {
       "seenIds": [],
-      "lastUpdated": "2026-02-08T09:01:58.081Z"
+      "lastUpdated": "2026-02-08T09:59:47.984Z"
     },
     "google-workspace": {
       "seenIds": [
         "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763"
       ],
-      "lastUpdated": "2026-02-08T09:01:58.281Z"
+      "lastUpdated": "2026-02-08T09:59:48.208Z"
     },
     "n8n-releases": {
       "seenIds": [],
-      "lastUpdated": "2026-02-08T09:01:58.774Z"
+      "lastUpdated": "2026-02-08T09:59:48.657Z"
     }
   },
   "notion": {
