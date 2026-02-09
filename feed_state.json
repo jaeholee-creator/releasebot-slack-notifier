@@ -5,9 +5,6 @@
   "rss": {
     "openai-news": {
       "seenIds": [
-        "https://openai.com/index/our-approach-to-localization",
-        "https://openai.com/policies/kr-privacy-policy",
-        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
         "https://openai.com/index/trusted-access-for-cyber",
         "https://openai.com/index/introducing-openai-frontier",
         "https://openai.com/index/navigating-health-questions",
@@ -17,9 +14,12 @@
         "https://openai.com/index/vfl-wolfsburg",
         "https://openai.com/index/sora-feed-philosophy",
         "https://openai.com/index/snowflake-partnership",
-        "https://openai.com/index/introducing-the-codex-app"
+        "https://openai.com/index/introducing-the-codex-app",
+        "https://openai.com/index/our-approach-to-localization",
+        "https://openai.com/policies/kr-privacy-policy",
+        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost"
       ],
-      "lastUpdated": "2026-02-09T05:01:52.881Z"
+      "lastUpdated": "2026-02-09T05:07:47.216Z"
     },
     "github-changelog": {
       "seenIds": []
@@ -37,7 +37,7 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
       ],
-      "lastUpdated": "2026-02-09T05:01:53.126Z"
+      "lastUpdated": "2026-02-09T05:07:49.036Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -49,12 +49,12 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
         "tag:github.com,2008:Repository/193215554/n8n@2.6.3"
       ],
-      "lastUpdated": "2026-02-09T05:01:53.651Z"
+      "lastUpdated": "2026-02-09T05:07:49.837Z"
     }
   },
   "notion": {
     "releasesColumnId": "302686b4-9b3b-81b5-813a-dd06618d9713",
     "dailyPageDate": "2026-02-09",
-    "dailyPageId": "302686b4-9b3b-8123-8418-dd483ff0f4fa"
+    "dailyPageId": "302686b4-9b3b-8132-8582-e5ecc0109a43"
   }
 }
