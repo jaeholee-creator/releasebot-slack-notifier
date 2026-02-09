@@ -17,9 +17,10 @@
         "https://openai.com/index/introducing-the-codex-app",
         "https://openai.com/index/our-approach-to-localization",
         "https://openai.com/policies/kr-privacy-policy",
-        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost"
+        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
+        "https://openai.com/index/testing-ads-in-chatgpt"
       ],
-      "lastUpdated": "2026-02-09T18:02:40.183Z"
+      "lastUpdated": "2026-02-09T20:08:26.217Z"
     },
     "github-changelog": {
       "seenIds": []
@@ -37,7 +38,7 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
       ],
-      "lastUpdated": "2026-02-09T18:02:40.527Z"
+      "lastUpdated": "2026-02-09T20:08:26.685Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -50,12 +51,12 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.3"
       ],
-      "lastUpdated": "2026-02-09T18:02:41.270Z"
+      "lastUpdated": "2026-02-09T20:08:27.476Z"
     }
   },
   "notion": {
     "releasesColumnId": "302686b4-9b3b-81b5-813a-dd06618d9713",
-    "dailyPageDate": "2026-02-09",
-    "dailyPageId": "302686b4-9b3b-8132-8582-e5ecc0109a43"
+    "dailyPageDate": "2026-02-10",
+    "dailyPageId": "302686b4-9b3b-81c1-ad99-eecdfdc845a1"
   }
 }
