@@ -1,89 +1,25 @@
 {
   "releasebot": {
-    "lastSeenId": 14567
+    "lastSeenId": 0
   },
   "rss": {
     "openai-news": {
-      "seenIds": [
-        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
-        "https://openai.com/index/trusted-access-for-cyber",
-        "https://openai.com/index/introducing-openai-frontier",
-        "https://openai.com/index/navigating-health-questions",
-        "https://openai.com/index/gpt-5-3-codex-system-card",
-        "https://openai.com/index/introducing-gpt-5-3-codex",
-        "https://openai.com/index/unlocking-the-codex-harness",
-        "https://openai.com/index/vfl-wolfsburg",
-        "https://openai.com/index/sora-feed-philosophy",
-        "https://openai.com/index/snowflake-partnership",
-        "https://openai.com/index/introducing-the-codex-app",
-        "https://openai.com/index/inside-our-in-house-data-agent",
-        "https://openai.com/index/retiring-gpt-4o-and-older-models",
-        "https://openai.com/index/taisei",
-        "https://openai.com/index/emea-youth-and-wellbeing-grant",
-        "https://openai.com/index/the-next-chapter-for-ai-in-the-eu",
-        "https://openai.com/index/ai-agent-link-safety",
-        "https://openai.com/index/pvh-future-of-fashion",
-        "https://openai.com/index/trustbank",
-        "https://openai.com/index/introducing-prism",
-        "https://openai.com/index/indeed-maggie-hulce",
-        "https://openai.com/index/unrolling-the-codex-agent-loop",
-        "https://openai.com/index/scaling-postgresql",
-        "https://openai.com/index/praktika",
-        "https://openai.com/business/guides-and-resources/chatgpt-usage-and-adoption-patterns-at-work",
-        "https://openai.com/index/higgsfield",
-        "https://openai.com/index/edu-for-countries",
-        "https://openai.com/index/how-countries-can-end-the-capability-overhang",
-        "https://openai.com/index/horizon-1000",
-        "https://openai.com/index/stargate-community",
-        "https://openai.com/index/cisco"
-      ]
-    },
-    "github-changelog": {
-      "seenIds": []
+      "seenIds": [],
+      "lastUpdated": "2026-02-09T00:50:09.104Z"
     },
     "google-workspace": {
       "seenIds": [
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2735551091943595422",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3840825528764042752",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8895218584162291947",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-4999999193544403922",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3351997211355408631",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-6102898850216675495",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3608987985026108685",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-1249794266030588923",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8015714511070396628",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2817784574777663983",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8722287606295689245",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5782810314329278348",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3390825777096161489",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2416831898192929823",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5211649861443275634",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8198370665322455917",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-6988890065492675826",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2811549918971652027",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8615876160053791050",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-999859103740790284",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5877882879322768806",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2858310777368041594"
-      ]
+        "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763"
+      ],
+      "lastUpdated": "2026-02-09T00:50:09.761Z"
     },
     "n8n-releases": {
-      "seenIds": [
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.2",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
-        "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
-        "tag:github.com,2008:Repository/193215554/n8n@2.4.8",
-        "tag:github.com,2008:Repository/193215554/n8n@2.4.8-exp.0",
-        "tag:github.com,2008:Repository/193215554/n8n@2.4.7-exp.0",
-        "tag:github.com,2008:Repository/193215554/n8n@2.4.6-exp.0",
-        "tag:github.com,2008:Repository/193215554/n8n@1.123.18",
-        "tag:github.com,2008:Repository/193215554/n8n@2.6.2"
-      ]
+      "seenIds": [],
+      "lastUpdated": "2026-02-09T00:50:10.425Z"
     }
   },
-  "notion": {}
+  "notion": {
+    "dailyPageId": "300686b4-9b3b-81ad-86d9-cacdc7798fe5",
+    "dailyPageDate": "2026-02-07"
+  }
 }

@@ -1,0 +1,114 @@
+{
+  "profile_version": "2.0",
+  "last_updated": "2026-02-09",
+  "description": "Jaeho의 실제 Claude Code 개발 환경",
+
+  "cli_tool": {
+    "name": "Claude Code",
+    "vendor": "Anthropic",
+    "type": "AI-powered Terminal CLI",
+    "version": "latest",
+    "model": "claude-sonnet-4-5-20250929",
+    "platform": "darwin (macOS)",
+    "os_version": "Darwin 25.2.0"
+  },
+
+  "mcp_servers": {
+    "playwright": {
+      "description": "브라우저 자동화 및 테스트",
+      "type": "plugin",
+      "tools": ["browser_navigate", "browser_click", "browser_snapshot", "browser_evaluate"],
+      "keywords": ["browser", "automation", "testing", "web", "screenshot"]
+    },
+    "context7": {
+      "description": "라이브러리 문서 검색 (최신 문서)",
+      "type": "plugin",
+      "tools": ["resolve-library-id", "query-docs"],
+      "keywords": ["documentation", "library", "api", "search"]
+    },
+    "github": {
+      "description": "GitHub API 연동 (PR, Issue, 코드 검색)",
+      "type": "plugin",
+      "tools": ["create_pull_request", "search_code", "list_issues", "create_or_update_file"],
+      "keywords": ["github", "git", "pr", "issue", "repository"]
+    },
+    "sequential-thinking": {
+      "description": "복잡한 문제의 단계별 사고",
+      "type": "mcp",
+      "tools": ["sequentialthinking"],
+      "keywords": ["thinking", "analysis", "reasoning"]
+    }
+  },
+
+  "skills": {
+    "commit": "Git 커밋 생성",
+    "commit-push-pr": "커밋, 푸시, PR 생성 자동화",
+    "code-review": "PR 코드 리뷰",
+    "feature-dev": "기능 개발 가이드",
+    "clean_gone": "삭제된 리모트 브랜치 정리",
+    "notion:create-task": "Notion 태스크 생성",
+    "notion:database-query": "Notion DB 쿼리",
+    "notion:tasks:build": "Notion에서 태스크 빌드",
+    "frontend-design": "프론트엔드 UI 생성"
+  },
+
+  "active_projects": {
+    "releasebot-slack-notifier": {
+      "description": "Releasebot.io + RSS 피드를 Slack/Notion으로 알림",
+      "tech_stack": ["Node.js", "JavaScript", "GitHub Actions"],
+      "integrations": ["Slack API", "Notion API", "DeepL", "Anthropic API", "RSS"],
+      "features": [
+        "30분마다 자동 실행",
+        "오늘 날짜 릴리스만 필터링",
+        "한글 번역 (DeepL)",
+        "Notion 일일 페이지 생성/업데이트",
+        "환경 비교 분석 (Claude AI)"
+      ]
+    }
+  },
+
+  "technology_stack": [
+    "Node.js",
+    "JavaScript",
+    "Python",
+    "Git",
+    "GitHub Actions",
+    "Slack API",
+    "Notion API"
+  ],
+
+  "ai_models_used": {
+    "claude-sonnet-4.5": {
+      "context": "메인 Claude Code 모델",
+      "usage": "코딩, 디버깅, 문서 작성, 분석"
+    },
+    "claude-opus-4.6": {
+      "context": "고급 작업용",
+      "usage": "복잡한 아키텍처 설계"
+    },
+    "claude-haiku-4.5": {
+      "context": "빠른 작업용 (환경 분석에 사용 중)",
+      "usage": "릴리스 환경 분석, 간단한 요약"
+    }
+  },
+
+  "interests_and_focus": [
+    "AI/ML 도구 및 API (OpenAI, Anthropic, Gemini)",
+    "개발 자동화 (GitHub Actions, CI/CD)",
+    "MCP (Model Context Protocol) 서버",
+    "Slack/Notion 연동 자동화",
+    "릴리스 모니터링 및 알림",
+    "번역 자동화 (DeepL)",
+    "브라우저 자동화 (Playwright)",
+    "CLI 도구 개발",
+    "생산성 향상 도구"
+  ],
+
+  "workflow_preferences": {
+    "commit_style": "Conventional Commits with Korean descriptions",
+    "notification_channels": ["Slack", "Notion"],
+    "automation_frequency": "30분마다 (GitHub Actions cron)",
+    "language": "한국어 (Korean)",
+    "timezone": "KST (UTC+9)"
+  }
+}
