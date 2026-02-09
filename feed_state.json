@@ -4,16 +4,19 @@
   },
   "rss": {
     "openai-news": {
-      "seenIds": []
+      "seenIds": [],
+      "lastUpdated": "2026-02-09T02:00:17.673Z"
     },
     "github-changelog": {
       "seenIds": []
     },
     "google-workspace": {
-      "seenIds": []
+      "seenIds": [],
+      "lastUpdated": "2026-02-09T02:00:18.177Z"
     },
     "n8n-releases": {
-      "seenIds": []
+      "seenIds": [],
+      "lastUpdated": "2026-02-09T02:00:18.708Z"
     }
   },
   "notion": {}
