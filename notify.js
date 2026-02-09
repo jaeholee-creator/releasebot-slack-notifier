@@ -7,7 +7,7 @@ const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || 'C0ACH02BLG5';
 const RELEASEBOT_URL = process.env.RELEASEBOT_URL || 'https://releasebot.io/api/feed/bc2b4e2a-dad6-4245-a2c7-13a7bd9407d4.json';
 const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 const NOTION_API_TOKEN = process.env.NOTION_API_TOKEN;
-const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || '2ff686b4-9b3b-81be-a6ab-d47bde818e04';
+const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028ca574f';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const STATE_FILE = 'feed_state.json';
 const FEEDS_FILE = 'feeds.json';
@@ -400,24 +400,21 @@ function getTodayString() {
 }
 
 async function getOrCreateAXNewsPage(state) {
-  const AX_NEWS_TITLE = '📅 AX News';
+  // NOTION_PAGE_ID를 AX News Page로 사용
+  const axNewsPageId = NOTION_PAGE_ID;
 
-  if (state.notion.axNewsPageId && state.notion.releasesColumnId) {
-    console.log(`  ✓ AX News page exists: ${state.notion.axNewsPageId}`);
+  if (state.notion.releasesColumnId) {
+    console.log(`  ✓ AX News page exists: ${axNewsPageId}`);
     return {
-      axNewsPageId: state.notion.axNewsPageId,
+      axNewsPageId: axNewsPageId,
       releasesColumnId: state.notion.releasesColumnId
     };
   }
 
-  console.log(`  📄 Creating AX News page`);
+  console.log(`  📄 Setting up AX News layout on existing page`);
 
-  const payload = {
-    parent: { database_id: NOTION_DATABASE_ID },
-    properties: {
-      title: { title: [{ text: { content: AX_NEWS_TITLE }}]}
-    },
-    icon: { emoji: '📅' },
+  // 기존 페이지에 2-column 레이아웃 추가
+  const columnPayload = {
     children: [
       {
         type: 'column_list',
@@ -464,18 +461,16 @@ async function getOrCreateAXNewsPage(state) {
     ]
   };
 
-  const response = await notionRequest('POST', '/v1/pages', payload);
-  const axNewsPageId = response.id;
+  await notionRequest('PATCH', `/v1/blocks/${axNewsPageId}/children`, columnPayload);
 
   const blocks = await notionRequest('GET', `/v1/blocks/${axNewsPageId}/children`);
   const columnList = blocks.results.find(b => b.type === 'column_list');
   const columns = await notionRequest('GET', `/v1/blocks/${columnList.id}/children`);
   const leftColumn = columns.results[0];
 
-  state.notion.axNewsPageId = axNewsPageId;
   state.notion.releasesColumnId = leftColumn.id;
 
-  console.log(`  ✓ AX News created: ${axNewsPageId}`);
+  console.log(`  ✓ AX News layout created`);
   console.log(`  ✓ Releases column ID: ${leftColumn.id}`);
 
   return {
