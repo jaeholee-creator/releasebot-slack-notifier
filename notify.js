@@ -821,12 +821,14 @@ function formatSlackMessage(item, translatedSummary, analysis) {
 
 async function processReleasebotFeed(state) {
   console.log('\n📦 Processing Releasebot feed...');
-  
+
   const lastSeenId = state.releasebot?.lastSeenId || 0;
+  // 최근 7일의 릴리스 가져오기 (테스트용)
   const todayStart = getTodayStartKST();
-  
+  const sevenDaysAgo = new Date(todayStart.getTime() - (7 * 24 * 60 * 60 * 1000));
+
   console.log(`  Last seen ID: ${lastSeenId}`);
-  console.log(`  Today filter (KST): ${todayStart.toISOString()}`);
+  console.log(`  Date filter (last 7 days): ${sevenDaysAgo.toISOString()}`);
   
   let data;
   try {
@@ -842,18 +844,18 @@ async function processReleasebotFeed(state) {
   const newReleases = releases.filter(r => {
     // ID 체크
     if (r.id <= lastSeenId) return false;
-    
+
     // 날짜 체크
     const releaseDate = r.release_date ? new Date(r.release_date) : null;
     if (!releaseDate || isNaN(releaseDate.getTime())) {
       console.log(`  ⏭️ Skip (no date): ID=${r.id}`);
       return false;
     }
-    
-    if (!isToday(releaseDate)) {
-      return false;  // 오늘이 아니면 건너뛰기
+
+    if (releaseDate < sevenDaysAgo) {
+      return false;  // 7일 이전이면 건너뛰기
     }
-    
+
     return true;
   }).sort((a, b) => a.id - b.id);
   
@@ -877,9 +879,11 @@ async function processRssFeeds(state, feedsConfig) {
   }
   
   console.log(`\n📡 Processing ${rssFeeds.length} RSS feed(s)...`);
-  
+
+  // 최근 7일의 RSS 항목 가져오기 (테스트용)
   const todayStart = getTodayStartKST();
-  console.log(`  Today filter (KST): ${todayStart.toISOString()}`);
+  const sevenDaysAgo = new Date(todayStart.getTime() - (7 * 24 * 60 * 60 * 1000));
+  console.log(`  Date filter (last 7 days): ${sevenDaysAgo.toISOString()}`);
   
   const allItems = [];
   
@@ -900,29 +904,29 @@ async function processRssFeeds(state, feedsConfig) {
       const feedState = state.rss[feed.id] || { seenIds: [] };
       const seenSet = new Set(feedState.seenIds || []);
       
-      // 오늘 날짜 + 미확인 항목만 필터링
+      // 최근 7일 + 미확인 항목만 필터링
       const newItems = items.filter(item => {
         // 날짜 없는 항목 건너뛰기
         if (!item.pubDate || isNaN(item.pubDate.getTime())) {
           console.log(`    ⏭️ Skip (no date): "${item.title.substring(0, 40)}..."`);
           return false;
         }
-        
-        // 오늘이 아닌 항목 건너뛰기
-        if (!isToday(item.pubDate)) {
+
+        // 7일 이전 항목 건너뛰기
+        if (item.pubDate < sevenDaysAgo) {
           return false;
         }
-        
+
         // 이미 본 항목 건너뛰기
         if (seenSet.has(item.id)) {
           console.log(`    ⏭️ Skip (seen): "${item.title.substring(0, 40)}..."`);
           return false;
         }
-        
+
         return true;
       });
-      
-      console.log(`    Today's new items: ${newItems.length}`);
+
+      console.log(`    Recent new items (last 7 days): ${newItems.length}`);
       
       // 모든 오늘 항목 처리 (개수 제한 없음)
       for (const item of newItems) {
