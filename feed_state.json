@@ -19,7 +19,7 @@
         "https://openai.com/policies/kr-privacy-policy",
         "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost"
       ],
-      "lastUpdated": "2026-02-09T08:07:09.565Z"
+      "lastUpdated": "2026-02-09T11:14:01.215Z"
     },
     "github-changelog": {
       "seenIds": []
@@ -37,7 +37,7 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
       ],
-      "lastUpdated": "2026-02-09T08:07:10.308Z"
+      "lastUpdated": "2026-02-09T11:14:01.933Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -47,9 +47,10 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.7.2",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
-        "tag:github.com,2008:Repository/193215554/n8n@2.6.3"
+        "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.3"
       ],
-      "lastUpdated": "2026-02-09T08:07:10.904Z"
+      "lastUpdated": "2026-02-09T11:14:02.945Z"
     }
   },
   "notion": {
