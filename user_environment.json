@@ -1,112 +1,114 @@
 {
-  "profile_version": "1.0",
-  "last_updated": "2026-02-07",
-  "description": "사용자의 현재 개발 환경 프로파일 - 릴리스 분석에 활용",
-  
+  "profile_version": "2.0",
+  "last_updated": "2026-02-09",
+  "description": "Jaeho의 실제 Claude Code 개발 환경",
+
   "cli_tool": {
-    "name": "OpenCode",
-    "type": "Terminal CLI",
+    "name": "Claude Code",
+    "vendor": "Anthropic",
+    "type": "AI-powered Terminal CLI",
     "version": "latest",
-    "plugins": [
-      "opencode-antigravity-auth@beta",
-      "oh-my-opencode@latest",
-      "@tarquinen/opencode-dcp@latest"
-    ]
+    "model": "claude-sonnet-4-5-20250929",
+    "platform": "darwin (macOS)",
+    "os_version": "Darwin 25.2.0"
   },
-  
+
   "mcp_servers": {
     "playwright": {
       "description": "브라우저 자동화 및 테스트",
-      "package": "@playwright/mcp",
-      "keywords": ["browser", "automation", "testing", "screenshot", "web"]
-    },
-    "filesystem": {
-      "description": "파일 시스템 접근",
-      "package": "@modelcontextprotocol/server-filesystem",
-      "keywords": ["file", "directory", "read", "write"]
+      "type": "plugin",
+      "tools": ["browser_navigate", "browser_click", "browser_snapshot", "browser_evaluate"],
+      "keywords": ["browser", "automation", "testing", "web", "screenshot"]
     },
     "context7": {
-      "description": "라이브러리 문서 검색",
-      "package": "context7 (remote)",
-      "keywords": ["docs", "documentation", "library", "api"]
-    },
-    "sequential-thinking": {
-      "description": "단계별 사고 및 분석",
-      "package": "@modelcontextprotocol/server-sequential-thinking",
-      "keywords": ["thinking", "reasoning", "analysis"]
+      "description": "라이브러리 문서 검색 (최신 문서)",
+      "type": "plugin",
+      "tools": ["resolve-library-id", "query-docs"],
+      "keywords": ["documentation", "library", "api", "search"]
     },
     "github": {
-      "description": "GitHub API 연동",
-      "package": "@modelcontextprotocol/server-github",
-      "keywords": ["github", "git", "repository", "pr", "issue"]
+      "description": "GitHub API 연동 (PR, Issue, 코드 검색)",
+      "type": "plugin",
+      "tools": ["create_pull_request", "search_code", "list_issues", "create_or_update_file"],
+      "keywords": ["github", "git", "pr", "issue", "repository"]
     },
-    "memory": {
-      "description": "지식 그래프 저장",
-      "package": "@modelcontextprotocol/server-memory",
-      "keywords": ["memory", "knowledge", "graph", "entity"]
-    },
-    "notion-epic-tracker": {
-      "description": "Notion 에픽 트래커 연동",
-      "package": "custom (notion-epic-tracker)",
-      "keywords": ["notion", "epic", "tracker", "project"]
+    "sequential-thinking": {
+      "description": "복잡한 문제의 단계별 사고",
+      "type": "mcp",
+      "tools": ["sequentialthinking"],
+      "keywords": ["thinking", "analysis", "reasoning"]
     }
   },
-  
-  "ai_models": {
-    "claude-opus-4.6": {
-      "usage": ["sisyphus", "prometheus", "metis", "momus"],
-      "purpose": "메인 코딩, 전략 계획, 품질 검토"
-    },
-    "claude-sonnet-4.5": {
-      "usage": ["librarian", "atlas"],
-      "purpose": "문서 검색, 범용 지원"
-    },
-    "claude-haiku-4.5": {
-      "usage": ["explore", "quick"],
-      "purpose": "빠른 탐색, 간단한 작업"
-    },
-    "gemini-3-pro": {
-      "usage": ["oracle", "artistry"],
-      "purpose": "아키텍처 상담, 창의적 문제 해결"
-    },
-    "gemini-3-flash": {
-      "usage": ["multimodal-looker"],
-      "purpose": "이미지/PDF 분석"
-    },
-    "gpt-5.3-codex": {
-      "usage": ["hephaestus", "deep"],
-      "purpose": "고급 코드 생성"
+
+  "skills": {
+    "commit": "Git 커밋 생성",
+    "commit-push-pr": "커밋, 푸시, PR 생성 자동화",
+    "code-review": "PR 코드 리뷰",
+    "feature-dev": "기능 개발 가이드",
+    "clean_gone": "삭제된 리모트 브랜치 정리",
+    "notion:create-task": "Notion 태스크 생성",
+    "notion:database-query": "Notion DB 쿼리",
+    "notion:tasks:build": "Notion에서 태스크 빌드",
+    "frontend-design": "프론트엔드 UI 생성"
+  },
+
+  "active_projects": {
+    "releasebot-slack-notifier": {
+      "description": "Releasebot.io + RSS 피드를 Slack/Notion으로 알림",
+      "tech_stack": ["Node.js", "JavaScript", "GitHub Actions"],
+      "integrations": ["Slack API", "Notion API", "DeepL", "Anthropic API", "RSS"],
+      "features": [
+        "30분마다 자동 실행",
+        "오늘 날짜 릴리스만 필터링",
+        "한글 번역 (DeepL)",
+        "Notion 일일 페이지 생성/업데이트",
+        "환경 비교 분석 (Claude AI)"
+      ]
     }
   },
-  
-  "agent_system": {
-    "sisyphus": "메인 빌더 - 구현 및 코딩",
-    "oracle": "아키텍처 및 디버깅 상담",
-    "librarian": "문서 및 코드 검색",
-    "explore": "코드베이스 탐색",
-    "prometheus": "전략적 계획 수립",
-    "metis": "사전 계획 분석",
-    "momus": "계획 품질 검토",
-    "hephaestus": "고급 코드 생성",
-    "atlas": "범용 어시스턴트"
-  },
-  
+
   "technology_stack": [
     "Node.js",
-    "TypeScript",
+    "JavaScript",
     "Python",
-    "React",
-    "Next.js"
+    "Git",
+    "GitHub Actions",
+    "Slack API",
+    "Notion API"
   ],
-  
-  "interests": [
-    "AI/ML 도구 및 API",
-    "CLI 개발 도구",
-    "MCP (Model Context Protocol)",
-    "LLM 에이전트 시스템",
-    "브라우저 자동화",
-    "Notion 연동",
-    "GitHub 연동",
-    "생산성 도구"
-  ]
+
+  "ai_models_used": {
+    "claude-sonnet-4.5": {
+      "context": "메인 Claude Code 모델",
+      "usage": "코딩, 디버깅, 문서 작성, 분석"
+    },
+    "claude-opus-4.6": {
+      "context": "고급 작업용",
+      "usage": "복잡한 아키텍처 설계"
+    },
+    "claude-haiku-4.5": {
+      "context": "빠른 작업용 (환경 분석에 사용 중)",
+      "usage": "릴리스 환경 분석, 간단한 요약"
+    }
+  },
+
+  "interests_and_focus": [
+    "AI/ML 도구 및 API (OpenAI, Anthropic, Gemini)",
+    "개발 자동화 (GitHub Actions, CI/CD)",
+    "MCP (Model Context Protocol) 서버",
+    "Slack/Notion 연동 자동화",
+    "릴리스 모니터링 및 알림",
+    "번역 자동화 (DeepL)",
+    "브라우저 자동화 (Playwright)",
+    "CLI 도구 개발",
+    "생산성 향상 도구"
+  ],
+
+  "workflow_preferences": {
+    "commit_style": "Conventional Commits with Korean descriptions",
+    "notification_channels": ["Slack", "Notion"],
+    "automation_frequency": "30분마다 (GitHub Actions cron)",
+    "language": "한국어 (Korean)",
+    "timezone": "KST (UTC+9)"
+  }
 }
