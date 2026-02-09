@@ -8,6 +8,7 @@ const RELEASEBOT_URL = process.env.RELEASEBOT_URL || 'https://releasebot.io/api/
 const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 const NOTION_API_TOKEN = process.env.NOTION_API_TOKEN;
 const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028ca574f';
+const NOTION_RELEASES_PAGE_ID = process.env.NOTION_RELEASES_PAGE_ID || '302686b49b3b81c8a903ca9111299fe3';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const STATE_FILE = 'feed_state.json';
 const FEEDS_FILE = 'feeds.json';
@@ -399,87 +400,18 @@ function getTodayString() {
   return kst.toISOString().split('T')[0];
 }
 
-async function getOrCreateAXNewsPage(state) {
-  // NOTION_PAGE_ID를 AX News Page로 사용
-  const axNewsPageId = NOTION_PAGE_ID;
+async function getOrCreateReleasesPage(state) {
+  // 사용자가 이미 생성한 "🚀 신규 배포" 페이지 사용
+  const releasesPageId = NOTION_RELEASES_PAGE_ID;
 
-  if (state.notion.releasesColumnId) {
-    console.log(`  ✓ AX News page exists: ${axNewsPageId}`);
-    return {
-      axNewsPageId: axNewsPageId,
-      releasesColumnId: state.notion.releasesColumnId
-    };
-  }
-
-  console.log(`  📄 Setting up AX News layout on existing page`);
-
-  // 기존 페이지에 2-column 레이아웃 추가
-  const columnPayload = {
-    children: [
-      {
-        type: 'column_list',
-        column_list: {
-          children: [
-            {
-              type: 'column',
-              column: {
-                children: [
-                  {
-                    type: 'heading_2',
-                    heading_2: {
-                      rich_text: [{ text: { content: '🚀 신규 배포' }}]
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              type: 'column',
-              column: {
-                children: [
-                  {
-                    type: 'heading_2',
-                    heading_2: {
-                      rich_text: [{ text: { content: '📊 데일리 리포트' }}]
-                    }
-                  },
-                  {
-                    type: 'paragraph',
-                    paragraph: {
-                      rich_text: [{
-                        text: { content: '(다른 시스템에서 추가 예정)' },
-                        annotations: { italic: true, color: 'gray' }
-                      }]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-
-  await notionRequest('PATCH', `/v1/blocks/${axNewsPageId}/children`, columnPayload);
-
-  const blocks = await notionRequest('GET', `/v1/blocks/${axNewsPageId}/children`);
-  const columnList = blocks.results.find(b => b.type === 'column_list');
-  const columns = await notionRequest('GET', `/v1/blocks/${columnList.id}/children`);
-  const leftColumn = columns.results[0];
-
-  state.notion.releasesColumnId = leftColumn.id;
-
-  console.log(`  ✓ AX News layout created`);
-  console.log(`  ✓ Releases column ID: ${leftColumn.id}`);
+  console.log(`  ✓ Using Releases page: ${releasesPageId}`);
 
   return {
-    axNewsPageId: axNewsPageId,
-    releasesColumnId: leftColumn.id
+    releasesPageId: releasesPageId
   };
 }
 
-async function getOrCreateDailyPage(state, axNewsPageId) {
+async function getOrCreateDailyPage(state, releasesPageId) {
   const today = getTodayString();
   const pageTitle = `📅 ${today} 신규 배포`;
 
@@ -491,7 +423,7 @@ async function getOrCreateDailyPage(state, axNewsPageId) {
   console.log(`  📄 Creating child page: ${pageTitle}`);
 
   const payload = {
-    parent: { page_id: axNewsPageId },
+    parent: { page_id: releasesPageId },
     properties: {
       title: { title: [{ text: { content: pageTitle }}]}
     },
@@ -517,47 +449,24 @@ async function getOrCreateDailyPage(state, axNewsPageId) {
   return pageId;
 }
 
-async function addLinkToAXNews(releasesColumnId, dailyPageId, dateString) {
-  console.log(`  🔗 Adding link to AX News: ${dateString}`);
+async function addLinkToReleasesPage(releasesPageId, dailyPageId, dateString) {
+  console.log(`  🔗 Adding link to Releases page: ${dateString}`);
 
-  const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesColumnId}/children`);
-  const headingBlock = existingBlocks.results.find(b => b.type === 'heading_2');
+  // "신규 배포" 페이지 상단에 링크 추가
+  const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesPageId}/children`);
 
-  if (!headingBlock) {
-    console.error('  ✗ Heading block not found in releases column');
-    return;
-  }
-
-  const existingParagraphs = existingBlocks.results.filter(b => b.type === 'paragraph');
-  for (const para of existingParagraphs) {
-    const text = para.paragraph.rich_text[0]?.plain_text || '';
-    if (text.includes(dateString)) {
-      console.log(`  ✓ Link already exists for ${dateString}`);
-      return;
+  // 이미 오늘 날짜 링크가 있는지 확인
+  for (const block of existingBlocks.results) {
+    if (block.type === 'child_page' && block.child_page) {
+      const pageTitle = block.child_page.title || '';
+      if (pageTitle.includes(dateString)) {
+        console.log(`  ✓ Child page already exists for ${dateString}`);
+        return;
+      }
     }
   }
 
-  const linkBlock = {
-    type: 'paragraph',
-    paragraph: {
-      rich_text: [
-        {
-          type: 'mention',
-          mention: {
-            type: 'page',
-            page: { id: dailyPageId }
-          }
-        }
-      ]
-    }
-  };
-
-  await notionRequest('PATCH', `/v1/blocks/${releasesColumnId}/children`, {
-    children: [linkBlock],
-    after: headingBlock.id
-  });
-
-  console.log(`  ✓ Link added to AX News`);
+  console.log(`  ✓ Child page will appear automatically in Releases page`);
 }
 
 async function addToNotion(dailyPageId, item, translatedSummary, analysis) {
@@ -991,20 +900,18 @@ async function main() {
     return;
   }
 
-  let axNewsPageId = null;
-  let releasesColumnId = null;
+  let releasesPageId = null;
   let dailyPageId = null;
 
   if (NOTION_API_TOKEN) {
     try {
-      const axNewsData = await getOrCreateAXNewsPage(state);
-      axNewsPageId = axNewsData.axNewsPageId;
-      releasesColumnId = axNewsData.releasesColumnId;
+      const releasesData = await getOrCreateReleasesPage(state);
+      releasesPageId = releasesData.releasesPageId;
 
-      dailyPageId = await getOrCreateDailyPage(state, axNewsPageId);
+      dailyPageId = await getOrCreateDailyPage(state, releasesPageId);
 
       const today = getTodayString();
-      await addLinkToAXNews(releasesColumnId, dailyPageId, today);
+      await addLinkToReleasesPage(releasesPageId, dailyPageId, today);
     } catch (e) {
       console.error(`  ✗ Notion setup failed: ${e.message}`);
     }
