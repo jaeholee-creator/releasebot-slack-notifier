@@ -226,8 +226,8 @@ async function callClaude(prompt) {
 
   return new Promise((resolve) => {
     const payload = JSON.stringify({
-      model: 'claude-3-5-haiku-latest',
-      max_tokens: 800,  // 500에서 800으로 증가 (더 상세한 분석)
+      model: 'claude-3-haiku-20240307',  // Claude 3 Haiku (안정적이고 빠름)
+      max_tokens: 1500,  // 800에서 1500으로 증가 (환경 비교 분석)
       messages: [{ role: 'user', content: prompt }]
     });
 
@@ -292,25 +292,48 @@ async function analyzeRelevanceToEnvironment(item, userEnv) {
   const summary = isRss ? item.summary : (item.release_details?.release_summary || '');
   const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || 'Unknown');
 
-  // 환경 정보를 구조화된 형태로 요약 (user_environment.json v2.0 구조에 맞춤)
-  const envContext = {
-    cli: userEnv.cli_tool?.name || 'Unknown',
-    mcpServers: Object.keys(userEnv.mcp_servers || {}).join(', '),
-    skills: Object.keys(userEnv.skills || {}).join(', '),
-    techStack: (userEnv.technology_stack || []).join(', '),
-    activeProjects: Object.keys(userEnv.active_projects || {}).join(', '),
-    interests: (userEnv.interests_and_focus || userEnv.interests || []).slice(0, 5).join(', ')
-  };
+  // MCP 서버 상세 정보
+  const mcpDetails = Object.entries(userEnv.mcp_servers || {})
+    .map(([name, info]) => `  - ${name}: ${info.description} (도구: ${(info.tools || []).join(', ')})`)
+    .join('\n');
 
-  const prompt = `당신은 소프트웨어 릴리스 분석 전문가입니다. 새로운 릴리스가 사용자의 개발 환경에 미치는 영향을 분석해주세요.
+  // 스킬 상세 정보
+  const skillDetails = Object.entries(userEnv.skills || {})
+    .map(([name, desc]) => `  - ${name}: ${desc}`)
+    .join('\n');
 
-## 사용자 환경
-- CLI 도구: ${envContext.cli}
-- MCP 서버: ${envContext.mcpServers}
-- 스킬: ${envContext.skills}
-- 기술 스택: ${envContext.techStack}
-- 활성 프로젝트: ${envContext.activeProjects}
-- 관심사: ${envContext.interests}
+  // AI 모델 사용 현황
+  const aiModels = Object.entries(userEnv.ai_models_used || {})
+    .map(([name, info]) => `  - ${name}: ${info.usage}`)
+    .join('\n');
+
+  // 활성 프로젝트 상세
+  const activeProjectDetails = Object.entries(userEnv.active_projects || {})
+    .map(([name, info]) => `  - ${name}: ${info.description}\n    스택: ${(info.tech_stack || []).join(', ')}\n    연동: ${(info.integrations || []).join(', ')}`)
+    .join('\n');
+
+  const prompt = `당신은 소프트웨어 릴리스 분석 전문가입니다.
+새로운 릴리스가 사용자의 **구체적인 개발 환경**에 어떤 영향을 미치는지 분석해주세요.
+
+## 사용자 개발 환경 (상세)
+
+### CLI 도구
+- ${userEnv.cli_tool?.name || 'Unknown'} (${userEnv.cli_tool?.vendor || ''}, 모델: ${userEnv.cli_tool?.model || 'Unknown'})
+
+### MCP 서버 (연동 도구)
+${mcpDetails || '  없음'}
+
+### 스킬 (자동화)
+${skillDetails || '  없음'}
+
+### AI 모델
+${aiModels || '  없음'}
+
+### 기술 스택
+${(userEnv.technology_stack || []).join(', ')}
+
+### 활성 프로젝트
+${activeProjectDetails || '  없음'}
 
 ## 새로운 릴리스
 **벤더:** ${vendor}
@@ -319,23 +342,27 @@ async function analyzeRelevanceToEnvironment(item, userEnv) {
 ${summary.substring(0, 1200)}
 
 ## 분석 요청
-다음 형식으로 **한국어**로 간결하게 응답해주세요:
+
+다음 형식으로 **한국어**로 응답하세요.
+반드시 사용자의 구체적 도구/서버명을 언급하세요.
 
 **📊 관련도:** [🔴 매우 높음 / 🟡 보통 / 🟢 낮음 / ⚪ 무관]
 
-**💡 핵심 요약:** (1-2문장으로 이 릴리스의 핵심 내용)
+**💡 핵심:** (이 릴리스의 핵심 내용을 1-2문장으로)
 
-**🎯 환경 영향:**
-- 현재 사용 중인 도구/기술과의 연관성
-- 이 릴리스가 사용자 환경에 미칠 구체적 영향
-- (관련 없으면 "이 기술/도구는 [간단 설명]")
+**🔍 환경 비교:**
+- **현재:** 사용자가 현재 사용 중인 관련 도구/기술 (구체적 이름)
+- **차이:** 이 릴리스와 현재 환경의 주요 차이점
+- **시너지:** 사용자의 MCP 서버, 스킬, 프로젝트와의 시너지 가능성
+  (예: "Playwright MCP와 함께 사용하면 브라우저 테스트 자동화 강화 가능")
+  (예: "Context7 MCP로 이 기술의 최신 문서를 즉시 검색 가능")
 
-**✅ 액션 아이템:** [즉시 적용 📥 / 검토 필요 🔍 / 참고만 📌 / 해당 없음 ➖]
-
-**이유:** (1문장으로 액션 아이템 선택 사유)
+**🎯 액션:** [즉시 적용 📥 / 검토 필요 🔍 / 참고만 📌 / 해당 없음 ➖]
+- 구체적 다음 단계 1-2개
 
 ---
-전체 응답은 250자 이내로 작성하세요.`;
+전체 응답은 500자 이내로 작성하세요.
+무관한 릴리스는 간단히 "이 릴리스는 [간단 설명]이며, 현재 환경과 직접적 관련은 없습니다."로 응답하세요.`;
 
   try {
     const analysis = await callClaude(prompt);
@@ -415,12 +442,49 @@ async function getOrCreateDailyPage(state, releasesPageId) {
   const today = getTodayString();
   const pageTitle = `📅 ${today} 신규 배포`;
 
+  // 1단계: State 캐시 확인 + 실제 존재 검증
   if (state.notion.dailyPageDate === today && state.notion.dailyPageId) {
-    console.log(`  ✓ Today's page exists: ${state.notion.dailyPageId}`);
-    return state.notion.dailyPageId;
+    try {
+      const page = await notionRequest('GET', `/v1/pages/${state.notion.dailyPageId}`);
+      if (!page.archived) {
+        console.log(`  ✓ Today's page verified: ${state.notion.dailyPageId}`);
+        return state.notion.dailyPageId;
+      }
+      console.log(`  ⚠️ Cached page is archived, searching for existing page...`);
+    } catch (e) {
+      console.log(`  ⚠️ Cached page not found (${e.message}), searching for existing page...`);
+    }
   }
 
-  console.log(`  📄 Creating child page: ${pageTitle}`);
+  // 2단계: Notion API로 기존 child_page 검색
+  console.log(`  🔍 Searching for existing page: ${pageTitle}`);
+
+  let cursor = undefined;
+  let hasMore = true;
+
+  while (hasMore) {
+    const queryParams = cursor ? `?start_cursor=${cursor}` : '';
+    const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesPageId}/children${queryParams}`);
+
+    for (const block of existingBlocks.results) {
+      if (block.type === 'child_page' && block.child_page) {
+        const title = block.child_page.title || '';
+        if (title.includes(today)) {
+          // 기존 페이지 발견 - State 동기화 후 반환
+          console.log(`  ✓ Found existing page for ${today}: ${block.id}`);
+          state.notion.dailyPageDate = today;
+          state.notion.dailyPageId = block.id;
+          return block.id;
+        }
+      }
+    }
+
+    hasMore = existingBlocks.has_more;
+    cursor = existingBlocks.next_cursor;
+  }
+
+  // 3단계: 새 페이지 생성
+  console.log(`  📄 Creating new child page: ${pageTitle}`);
 
   const payload = {
     parent: { page_id: releasesPageId },
@@ -568,12 +632,15 @@ async function addToNotion(dailyPageId, item, translatedSummary, analysis) {
 
 function translateToKorean(text) {
   if (!DEEPL_API_KEY || !text) {
+    if (!DEEPL_API_KEY && text) {
+      console.warn('  ⚠️ Translation skipped: DEEPL_API_KEY not set');
+    }
     return Promise.resolve(text);
   }
-  
+
   return new Promise((resolve) => {
     const postData = JSON.stringify({ text: [text], target_lang: 'KO' });
-    
+
     const options = {
       hostname: 'api-free.deepl.com',
       path: '/v2/translate',
@@ -584,7 +651,7 @@ function translateToKorean(text) {
         'Content-Length': Buffer.byteLength(postData)
       }
     };
-    
+
     const req = https.request(options, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
@@ -592,20 +659,55 @@ function translateToKorean(text) {
         try {
           const result = JSON.parse(data);
           if (result.translations && result.translations[0]) {
-            resolve(result.translations[0].text);
+            const translated = result.translations[0].text;
+            console.log(`  ✓ Translation: ${text.length} chars -> ${translated.length} chars`);
+            resolve(translated);
           } else {
+            console.warn(`  ⚠️ Translation failed: unexpected response`);
             resolve(text);
           }
         } catch (e) {
+          console.warn(`  ⚠️ Translation parse error: ${e.message}`);
           resolve(text);
         }
       });
     });
-    
-    req.on('error', () => resolve(text));
+
+    req.on('error', (e) => {
+      console.warn(`  ⚠️ Translation network error: ${e.message}`);
+      resolve(text);
+    });
+
+    req.setTimeout(10000, () => {
+      console.warn('  ⚠️ Translation timeout (10s)');
+      req.destroy();
+      resolve(text);
+    });
+
     req.write(postData);
     req.end();
   });
+}
+
+// Claude API를 사용한 fallback 번역
+async function translateWithClaude(text) {
+  if (!ANTHROPIC_API_KEY || !text) {
+    return text;
+  }
+
+  const prompt = `다음 영문 텍스트를 한국어로 번역하세요. 번역만 출력하세요.\n\n${text.substring(0, 1000)}`;
+
+  try {
+    const result = await callClaude(prompt);
+    if (result && result.length > 0) {
+      console.log(`  ✓ Claude translation: ${text.length} chars -> ${result.length} chars`);
+      return result;
+    }
+    return text;
+  } catch (e) {
+    console.warn(`  ⚠️ Claude translation failed: ${e.message}`);
+    return text;
+  }
 }
 
 // ============ Slack Functions ============
@@ -909,9 +1011,6 @@ async function main() {
       releasesPageId = releasesData.releasesPageId;
 
       dailyPageId = await getOrCreateDailyPage(state, releasesPageId);
-
-      const today = getTodayString();
-      await addLinkToReleasesPage(releasesPageId, dailyPageId, today);
     } catch (e) {
       console.error(`  ✗ Notion setup failed: ${e.message}`);
     }
@@ -930,9 +1029,19 @@ async function main() {
 
     const summary = isRss ? item.summary : (item.release_details?.release_summary || '');
     let translatedSummary = summary;
-    if (summary && DEEPL_API_KEY) {
-      console.log('  📝 Translating...');
-      translatedSummary = await translateToKorean(summary.substring(0, 1500));
+
+    if (summary) {
+      // 1. DeepL 번역 시도
+      if (DEEPL_API_KEY) {
+        console.log('  📝 Translating with DeepL...');
+        translatedSummary = await translateToKorean(summary.substring(0, 1500));
+      }
+
+      // 2. DeepL 실패 또는 없으면 Claude fallback
+      if (translatedSummary === summary && ANTHROPIC_API_KEY) {
+        console.log('  📝 Trying Claude translation as fallback...');
+        translatedSummary = await translateWithClaude(summary.substring(0, 1000));
+      }
     }
 
     // 환경 분석

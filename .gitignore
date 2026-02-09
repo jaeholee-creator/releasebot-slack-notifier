@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# Node modules (if added later)
+node_modules/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Test files
+test_*.js
+
+# Backup files
+*_backup*.json
+feed_state_before_test.json
