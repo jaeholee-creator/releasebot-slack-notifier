@@ -7,7 +7,7 @@ const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || 'C0ACH02BLG5';
 const RELEASEBOT_URL = process.env.RELEASEBOT_URL || 'https://releasebot.io/api/feed/bc2b4e2a-dad6-4245-a2c7-13a7bd9407d4.json';
 const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 const NOTION_API_TOKEN = process.env.NOTION_API_TOKEN;
-const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028ca574f';
+const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || '2ff686b4-9b3b-81be-a6ab-d47bde818e04';
 const STATE_FILE = 'feed_state.json';
 const FEEDS_FILE = 'feeds.json';
 
@@ -226,58 +226,182 @@ function getTodayString() {
   return kst.toISOString().split('T')[0];
 }
 
-async function getOrCreateDailyPage(state) {
-  const today = getTodayString();
-  const pageTitle = `${today} 신규 배포`;
-  
-  if (state.notion?.dailyPageId && state.notion?.dailyPageDate === today) {
-    console.log(`  → Using existing daily page: ${pageTitle}`);
-    return state.notion.dailyPageId;
+async function getOrCreateAXNewsPage(state) {
+  const AX_NEWS_TITLE = '📅 AX News';
+
+  if (state.notion.axNewsPageId && state.notion.releasesColumnId) {
+    console.log(`  ✓ AX News page exists: ${state.notion.axNewsPageId}`);
+    return {
+      axNewsPageId: state.notion.axNewsPageId,
+      releasesColumnId: state.notion.releasesColumnId
+    };
   }
-  
-  console.log(`  → Creating daily page: ${pageTitle}`);
-  
-  const pagePayload = {
-    parent: { page_id: NOTION_PAGE_ID },
+
+  console.log(`  📄 Creating AX News page`);
+
+  const payload = {
+    parent: { database_id: NOTION_DATABASE_ID },
     properties: {
-      title: {
-        title: [{ text: { content: pageTitle } }]
-      }
+      title: { title: [{ text: { content: AX_NEWS_TITLE }}]}
     },
+    icon: { emoji: '📅' },
     children: [
       {
-        object: 'block',
-        type: 'heading_2',
-        heading_2: {
-          rich_text: [{ text: { content: '📦 오늘의 릴리스' } }]
+        type: 'column_list',
+        column_list: {
+          children: [
+            {
+              type: 'column',
+              column: {
+                children: [
+                  {
+                    type: 'heading_2',
+                    heading_2: {
+                      rich_text: [{ text: { content: '🚀 신규 배포' }}]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              type: 'column',
+              column: {
+                children: [
+                  {
+                    type: 'heading_2',
+                    heading_2: {
+                      rich_text: [{ text: { content: '📊 데일리 리포트' }}]
+                    }
+                  },
+                  {
+                    type: 'paragraph',
+                    paragraph: {
+                      rich_text: [{
+                        text: { content: '(다른 시스템에서 추가 예정)' },
+                        annotations: { italic: true, color: 'gray' }
+                      }]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
   };
-  
-  const page = await notionRequest('POST', '/v1/pages', pagePayload);
-  const pageId = page.id;
-  console.log(`  ✓ Created page: ${pageId}`);
-  
-  state.notion = {
-    dailyPageId: pageId,
-    dailyPageDate: today
+
+  const response = await notionRequest('POST', '/v1/pages', payload);
+  const axNewsPageId = response.id;
+
+  const blocks = await notionRequest('GET', `/v1/blocks/${axNewsPageId}/children`);
+  const columnList = blocks.results.find(b => b.type === 'column_list');
+  const columns = await notionRequest('GET', `/v1/blocks/${columnList.id}/children`);
+  const leftColumn = columns.results[0];
+
+  state.notion.axNewsPageId = axNewsPageId;
+  state.notion.releasesColumnId = leftColumn.id;
+
+  console.log(`  ✓ AX News created: ${axNewsPageId}`);
+  console.log(`  ✓ Releases column ID: ${leftColumn.id}`);
+
+  return {
+    axNewsPageId: axNewsPageId,
+    releasesColumnId: leftColumn.id
   };
-  
+}
+
+async function getOrCreateDailyPage(state, axNewsPageId) {
+  const today = getTodayString();
+  const pageTitle = `📅 ${today} 신규 배포`;
+
+  if (state.notion.dailyPageDate === today && state.notion.dailyPageId) {
+    console.log(`  ✓ Today's page exists: ${state.notion.dailyPageId}`);
+    return state.notion.dailyPageId;
+  }
+
+  console.log(`  📄 Creating child page: ${pageTitle}`);
+
+  const payload = {
+    parent: { page_id: axNewsPageId },
+    properties: {
+      title: { title: [{ text: { content: pageTitle }}]}
+    },
+    icon: { emoji: '📅' },
+    children: [
+      {
+        type: 'heading_2',
+        heading_2: {
+          rich_text: [{ text: { content: '🚀 오늘의 릴리스' }}]
+        }
+      }
+    ]
+  };
+
+  const response = await notionRequest('POST', '/v1/pages', payload);
+  const pageId = response.id;
+
+  state.notion.dailyPageDate = today;
+  state.notion.dailyPageId = pageId;
+
+  console.log(`  ✓ Child page created: ${pageId}`);
+
   return pageId;
 }
 
-async function addToNotion(pageId, item, translatedSummary) {
+async function addLinkToAXNews(releasesColumnId, dailyPageId, dateString) {
+  console.log(`  🔗 Adding link to AX News: ${dateString}`);
+
+  const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesColumnId}/children`);
+  const headingBlock = existingBlocks.results.find(b => b.type === 'heading_2');
+
+  if (!headingBlock) {
+    console.error('  ✗ Heading block not found in releases column');
+    return;
+  }
+
+  const existingParagraphs = existingBlocks.results.filter(b => b.type === 'paragraph');
+  for (const para of existingParagraphs) {
+    const text = para.paragraph.rich_text[0]?.plain_text || '';
+    if (text.includes(dateString)) {
+      console.log(`  ✓ Link already exists for ${dateString}`);
+      return;
+    }
+  }
+
+  const linkBlock = {
+    type: 'paragraph',
+    paragraph: {
+      rich_text: [
+        {
+          type: 'mention',
+          mention: {
+            type: 'page',
+            page: { id: dailyPageId }
+          }
+        }
+      ]
+    }
+  };
+
+  await notionRequest('PATCH', `/v1/blocks/${releasesColumnId}/children`, {
+    children: [linkBlock],
+    after: headingBlock.id
+  });
+
+  console.log(`  ✓ Link added to AX News`);
+}
+
+async function addToNotion(dailyPageId, item, translatedSummary) {
   const isRss = item.feedType === 'rss';
-  
+
   const title = isRss ? item.title : (item.release_details?.release_name || item.product?.display_name || 'Unknown');
   const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || 'Unknown');
   const url = isRss ? item.link : `https://releasebot.io/updates/${item.product?.vendor?.slug || ''}`;
-  const source = isRss ? `📡 ${item.source}` : '🤖 Releasebot';
-  const releaseDate = isRss 
-    ? (item.pubDate instanceof Date ? item.pubDate.toLocaleDateString('ko-KR') : '')
-    : (item.release_date ? new Date(item.release_date).toLocaleDateString('ko-KR') : '');
-  
+  const dateStr = isRss
+    ? (item.pubDate instanceof Date ? item.pubDate.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '')
+    : (item.release_date ? new Date(item.release_date).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '');
+
   const blocks = [
     {
       object: 'block',
@@ -286,16 +410,16 @@ async function addToNotion(pageId, item, translatedSummary) {
         rich_text: [
           {
             type: 'text',
-            text: { content: `🚀 ${title.substring(0, 100)}`, link: url ? { url: url } : null }
+            text: { content: `🔹 ${title.substring(0, 100)}` }
           }
         ]
       }
     }
   ];
-  
+
   if (translatedSummary) {
-    const summaryText = translatedSummary.length > 500 
-      ? translatedSummary.substring(0, 500) + '...' 
+    const summaryText = translatedSummary.length > 500
+      ? translatedSummary.substring(0, 500) + '...'
       : translatedSummary;
     blocks.push({
       object: 'block',
@@ -305,7 +429,7 @@ async function addToNotion(pageId, item, translatedSummary) {
       }
     });
   }
-  
+
   blocks.push({
     object: 'block',
     type: 'paragraph',
@@ -313,20 +437,41 @@ async function addToNotion(pageId, item, translatedSummary) {
       rich_text: [
         {
           type: 'text',
-          text: { content: `${source} • ${vendor}${releaseDate ? ` • 📅 ${releaseDate}` : ''}` },
+          text: { content: `📡 ${vendor} • ${dateStr}` },
           annotations: { color: 'gray' }
         }
       ]
     }
   });
-  
+
+  if (url) {
+    blocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [
+          {
+            type: 'text',
+            text: { content: '🔗 ', link: null }
+          },
+          {
+            type: 'text',
+            text: { content: '자세히 보기', link: { url: url } },
+            annotations: { color: 'blue' }
+          }
+        ]
+      }
+    });
+  }
+
   blocks.push({
     object: 'block',
     type: 'divider',
     divider: {}
   });
-  
-  await notionRequest('PATCH', `/v1/blocks/${pageId}/children`, { children: blocks });
+
+  await notionRequest('PATCH', `/v1/blocks/${dailyPageId}/children`, { children: blocks });
+  console.log(`  ✓ Notion: Added to child page`);
 }
 
 // ============ Translation ============
@@ -583,35 +728,45 @@ async function main() {
   const allItems = [...releasebotItems, ...rssItems];
   
   console.log(`\n📬 Total new items to process: ${allItems.length}`);
-  
+
   if (allItems.length === 0) {
     console.log('No new items found');
     saveState(state);
     return;
   }
-  
-  let notionPageId = null;
+
+  let axNewsPageId = null;
+  let releasesColumnId = null;
+  let dailyPageId = null;
+
   if (NOTION_API_TOKEN) {
     try {
-      notionPageId = await getOrCreateDailyPage(state);
+      const axNewsData = await getOrCreateAXNewsPage(state);
+      axNewsPageId = axNewsData.axNewsPageId;
+      releasesColumnId = axNewsData.releasesColumnId;
+
+      dailyPageId = await getOrCreateDailyPage(state, axNewsPageId);
+
+      const today = getTodayString();
+      await addLinkToAXNews(releasesColumnId, dailyPageId, today);
     } catch (e) {
       console.error(`  Notion setup failed: ${e.message}`);
     }
   }
-  
+
   for (const item of allItems) {
     const isRss = item.feedType === 'rss';
     const itemName = isRss ? item.title.substring(0, 50) : (item.product?.display_name || 'Unknown');
-    
+
     console.log(`\nProcessing: ${itemName}...`);
-    
+
     const summary = isRss ? item.summary : (item.release_details?.release_summary || '');
     let translatedSummary = summary;
     if (summary && DEEPL_API_KEY) {
       console.log('  📝 Translating...');
       translatedSummary = await translateToKorean(summary.substring(0, 1500));
     }
-    
+
     try {
       const { blocks, text } = formatSlackMessage(item, translatedSummary);
       await postToSlack(SLACK_CHANNEL_ID, blocks, text);
@@ -619,16 +774,15 @@ async function main() {
     } catch (e) {
       console.error(`  ✗ Slack: ${e.message}`);
     }
-    
-    if (notionPageId) {
+
+    if (dailyPageId) {
       try {
-        await addToNotion(notionPageId, item, translatedSummary);
-        console.log('  ✓ Notion: Added');
+        await addToNotion(dailyPageId, item, translatedSummary);
       } catch (e) {
         console.error(`  ✗ Notion: ${e.message}`);
       }
     }
-    
+
     await sleep(1500);
   }
   
