@@ -1,55 +1,19 @@
 {
   "releasebot": {
-    "lastSeenId": 14806
+    "lastSeenId": 0
   },
   "rss": {
     "openai-news": {
-      "seenIds": [
-        "https://openai.com/index/our-approach-to-localization",
-        "https://openai.com/policies/kr-privacy-policy",
-        "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
-        "https://openai.com/index/trusted-access-for-cyber",
-        "https://openai.com/index/introducing-openai-frontier",
-        "https://openai.com/index/navigating-health-questions",
-        "https://openai.com/index/gpt-5-3-codex-system-card",
-        "https://openai.com/index/introducing-gpt-5-3-codex",
-        "https://openai.com/index/unlocking-the-codex-harness",
-        "https://openai.com/index/vfl-wolfsburg",
-        "https://openai.com/index/sora-feed-philosophy",
-        "https://openai.com/index/snowflake-partnership",
-        "https://openai.com/index/introducing-the-codex-app"
-      ],
-      "lastUpdated": "2026-02-09T02:15:21.943Z"
+      "seenIds": []
     },
     "github-changelog": {
       "seenIds": []
     },
     "google-workspace": {
-      "seenIds": [
-        "tag:blogger.com,1999:blog-5245696872621940063.post-4926144838075722763",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-2735551091943595422",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3840825528764042752",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-8895218584162291947",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-4999999193544403922",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3351997211355408631",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-6102898850216675495",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
-      ],
-      "lastUpdated": "2026-02-09T02:15:22.185Z"
+      "seenIds": []
     },
     "n8n-releases": {
-      "seenIds": [
-        "tag:github.com,2008:Repository/193215554/n8n@2.6.4",
-        "tag:github.com,2008:Repository/193215554/n8n@1.123.20",
-        "tag:github.com,2008:Repository/193215554/n8n@1.123.19",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.2",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
-        "tag:github.com,2008:Repository/193215554/n8n@2.6.3"
-      ],
-      "lastUpdated": "2026-02-09T02:15:22.851Z"
+      "seenIds": []
     }
   },
   "notion": {}
