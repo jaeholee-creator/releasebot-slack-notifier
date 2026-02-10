@@ -1,6 +1,6 @@
 {
   "releasebot": {
-    "lastSeenId": 14966
+    "lastSeenId": 14996
   },
   "rss": {
     "openai-news": {
@@ -21,7 +21,7 @@
         "https://openai.com/index/testing-ads-in-chatgpt",
         "https://openai.com/index/bringing-chatgpt-to-genaimil"
       ],
-      "lastUpdated": "2026-02-10T11:37:44.719Z"
+      "lastUpdated": "2026-02-10T15:48:36.489Z"
     },
     "github-changelog": {
       "seenIds": []
@@ -39,7 +39,7 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
         "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
       ],
-      "lastUpdated": "2026-02-10T11:37:45.377Z"
+      "lastUpdated": "2026-02-10T15:48:37.292Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -52,12 +52,12 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.3"
       ],
-      "lastUpdated": "2026-02-10T11:37:46.128Z"
+      "lastUpdated": "2026-02-10T15:48:38.281Z"
     }
   },
   "notion": {
     "releasesColumnId": "302686b4-9b3b-81b5-813a-dd06618d9713",
-    "dailyPageDate": "2026-02-10",
-    "dailyPageId": "302686b4-9b3b-81c1-ad99-eecdfdc845a1"
+    "dailyPageDate": "2026-02-11",
+    "dailyPageId": "303686b4-9b3b-8138-aaad-c08c7c6f768e"
   }
 }
