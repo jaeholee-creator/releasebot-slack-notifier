@@ -226,7 +226,7 @@ async function callClaude(prompt) {
 
   return new Promise((resolve) => {
     const payload = JSON.stringify({
-      model: 'claude-3-haiku-20240307',  // Claude 3 Haiku (안정적이고 빠름)
+      model: 'claude-haiku-4-5',  // Claude Haiku 4.5 (최신, 4-5배 더 빠름)
       max_tokens: 1500,  // 800에서 1500으로 증가 (환경 비교 분석)
       messages: [{ role: 'user', content: prompt }]
     });
