@@ -1,6 +1,6 @@
 {
   "releasebot": {
-    "lastSeenId": 0
+    "lastSeenId": 15253
   },
   "rss": {
     "openai-news": {
@@ -19,9 +19,11 @@
         "https://openai.com/policies/kr-privacy-policy",
         "https://openai.com/index/gpt-5-lowers-protein-synthesis-cost",
         "https://openai.com/index/testing-ads-in-chatgpt",
-        "https://openai.com/index/bringing-chatgpt-to-genaimil"
+        "https://openai.com/index/bringing-chatgpt-to-genaimil",
+        "https://openai.com/index/harness-engineering",
+        "https://openai.com/index/introducing-gpt-5-3-codex-spark"
       ],
-      "lastUpdated": "2026-02-11T08:05:22.171Z"
+      "lastUpdated": "2026-02-13T03:00:02.144Z"
     },
     "github-changelog": {
       "seenIds": []
@@ -37,9 +39,14 @@
         "tag:blogger.com,1999:blog-5245696872621940063.post-6102898850216675495",
         "tag:blogger.com,1999:blog-5245696872621940063.post-3799958532250936156",
         "tag:blogger.com,1999:blog-5245696872621940063.post-5479153162812179112",
-        "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518"
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1056184654611004518",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1088791744133891411",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-2205061689944568400",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-4601937037029284339",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-1560755356829775299",
+        "tag:blogger.com,1999:blog-5245696872621940063.post-7883993717466282345"
       ],
-      "lastUpdated": "2026-02-11T08:05:22.549Z"
+      "lastUpdated": "2026-02-13T03:00:02.815Z"
     },
     "n8n-releases": {
       "seenIds": [
@@ -50,26 +57,47 @@
         "tag:github.com,2008:Repository/193215554/n8n@2.7.1",
         "tag:github.com,2008:Repository/193215554/n8n@2.7.0",
         "tag:github.com,2008:Repository/193215554/n8n@2.6.3",
-        "tag:github.com,2008:Repository/193215554/n8n@2.7.3"
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.3",
+        "tag:github.com,2008:Repository/193215554/n8n@2.8.0",
+        "tag:github.com,2008:Repository/193215554/n8n@2.7.4",
+        "tag:github.com,2008:Repository/193215554/n8n@2.8.1",
+        "tag:github.com,2008:Repository/193215554/n8n@2.8.2"
       ],
-      "lastUpdated": "2026-02-11T08:05:23.053Z"
+      "lastUpdated": "2026-02-13T03:00:03.567Z"
     },
     "anthropic-claude-code": {
-      "seenIds": [],
-      "lastUpdated": null
+      "seenIds": [
+        "tag:github.com,2008:Repository/937253475/v2.1.39",
+        "tag:github.com,2008:Repository/937253475/v2.1.38",
+        "tag:github.com,2008:Repository/937253475/v2.1.37",
+        "tag:github.com,2008:Repository/937253475/v2.1.36",
+        "tag:github.com,2008:Repository/937253475/v2.1.34",
+        "tag:github.com,2008:Repository/937253475/v2.1.33",
+        "tag:github.com,2008:Repository/937253475/v2.1.32"
+      ],
+      "lastUpdated": "2026-02-13T03:00:03.793Z"
     },
     "anthropic-sdk-python": {
-      "seenIds": [],
-      "lastUpdated": null
+      "seenIds": [
+        "tag:github.com,2008:Repository/590187800/v0.79.0",
+        "tag:github.com,2008:Repository/590187800/v0.78.0"
+      ],
+      "lastUpdated": "2026-02-13T03:00:04.106Z"
     },
     "anthropic-sdk-typescript": {
-      "seenIds": [],
-      "lastUpdated": null
+      "seenIds": [
+        "tag:github.com,2008:Repository/595176353/sdk-v0.74.0",
+        "tag:github.com,2008:Repository/595176353/vertex-sdk-v0.14.3",
+        "tag:github.com,2008:Repository/595176353/sdk-v0.73.0",
+        "tag:github.com,2008:Repository/595176353/foundry-sdk-v0.2.3",
+        "tag:github.com,2008:Repository/595176353/bedrock-sdk-v0.26.3"
+      ],
+      "lastUpdated": "2026-02-13T03:00:04.477Z"
     }
   },
   "notion": {
     "releasesColumnId": "302686b4-9b3b-81b5-813a-dd06618d9713",
-    "dailyPageDate": "2026-02-11",
-    "dailyPageId": "303686b4-9b3b-8138-aaad-c08c7c6f768e"
+    "dailyPageDate": "2026-02-13",
+    "dailyPageId": "305686b4-9b3b-8188-b62e-ead3b79a8f54"
   }
 }
