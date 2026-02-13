@@ -27,6 +27,27 @@
       "url": "https://github.com/n8n-io/n8n/releases.atom",
       "vendor": "n8n",
       "enabled": true
+    },
+    {
+      "id": "anthropic-claude-code",
+      "name": "Anthropic Claude Code Releases",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "vendor": "Anthropic",
+      "enabled": true
+    },
+    {
+      "id": "anthropic-sdk-python",
+      "name": "Anthropic Python SDK Releases",
+      "url": "https://github.com/anthropics/anthropic-sdk-python/releases.atom",
+      "vendor": "Anthropic",
+      "enabled": true
+    },
+    {
+      "id": "anthropic-sdk-typescript",
+      "name": "Anthropic TypeScript SDK Releases",
+      "url": "https://github.com/anthropics/anthropic-sdk-typescript/releases.atom",
+      "vendor": "Anthropic",
+      "enabled": true
     }
   ]
 }
