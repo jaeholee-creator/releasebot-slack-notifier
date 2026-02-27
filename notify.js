@@ -7,12 +7,12 @@ const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || 'C0ACH02BLG5';
 const RELEASEBOT_URL = process.env.RELEASEBOT_URL || 'https://releasebot.io/api/feed/bc2b4e2a-dad6-4245-a2c7-13a7bd9407d4.json';
 const DEEPL_API_KEY = process.env.DEEPL_API_KEY;
 const NOTION_API_TOKEN = process.env.NOTION_API_TOKEN;
-const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID || '2ff686b49b3b80ef9502d23028ca574f';
-const NOTION_RELEASES_PAGE_ID = process.env.NOTION_RELEASES_PAGE_ID || '302686b49b3b81c8a903ca9111299fe3';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const STATE_FILE = 'feed_state.json';
 const FEEDS_FILE = 'feeds.json';
 const USER_ENV_FILE = 'user_environment.json';
+// Notion 통합 발행용 큐 파일 (ai_trend_collector가 09:00에 읽어서 통합 발행)
+const NOTION_QUEUE_FILE = 'notion_queue.json';
 
 // Configuration
 const RETENTION_DAYS = 30;  // Only process items from last 30 days
@@ -217,6 +217,33 @@ function loadUserEnvironment() {
   }
 }
 
+// ============ Notion Queue ============
+
+/**
+ * 처리된 아이템을 notion_queue.json에 누적 저장.
+ * ai_trend_collector가 오전 9시 실행 시 큐를 읽어 통합 발행.
+ */
+function appendToNotionQueue(newItems) {
+  let existing = { items: [] };
+  try {
+    if (fs.existsSync(NOTION_QUEUE_FILE)) {
+      const content = fs.readFileSync(NOTION_QUEUE_FILE, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed.items)) {
+        existing = parsed;
+      }
+    }
+  } catch (e) {
+    console.warn(`  ⚠️ Queue file read failed: ${e.message}`);
+  }
+
+  existing.items = [...existing.items, ...newItems];
+  existing.updated_at = new Date().toISOString();
+
+  fs.writeFileSync(NOTION_QUEUE_FILE, JSON.stringify(existing, null, 2));
+  console.log(`  ✓ Notion Queue: ${newItems.length}개 추가 (누적 ${existing.items.length}개)`);
+}
+
 // ============ Claude API ============
 
 async function callClaude(prompt) {
@@ -374,258 +401,6 @@ ${summary.substring(0, 1200)}
     console.error(`  ✗ Analysis failed: ${e.message}`);
     return null;
   }
-}
-
-
-// ============ Notion Functions ============
-
-function notionRequest(method, path, body) {
-  return new Promise((resolve, reject) => {
-    const payload = body ? JSON.stringify(body) : null;
-    
-    const options = {
-      hostname: 'api.notion.com',
-      path: path,
-      method: method,
-      headers: {
-        'Authorization': `Bearer ${NOTION_API_TOKEN}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': '2022-06-28'
-      }
-    };
-    
-    if (payload) {
-      options.headers['Content-Length'] = Buffer.byteLength(payload);
-    }
-    
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          if (res.statusCode >= 400) {
-            reject(new Error(`Notion API error (${res.statusCode}): ${result.message || JSON.stringify(result)}`));
-          } else {
-            resolve(result);
-          }
-        } catch (e) {
-          reject(new Error(`Failed to parse Notion response: ${e.message}`));
-        }
-      });
-    });
-    
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
-}
-
-function getTodayString() {
-  const now = new Date();
-  const kst = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-  return kst.toISOString().split('T')[0];
-}
-
-async function getOrCreateReleasesPage(state) {
-  // 사용자가 이미 생성한 "🚀 신규 배포" 페이지 사용
-  const releasesPageId = NOTION_RELEASES_PAGE_ID;
-
-  console.log(`  ✓ Using Releases page: ${releasesPageId}`);
-
-  return {
-    releasesPageId: releasesPageId
-  };
-}
-
-async function getOrCreateDailyPage(state, releasesPageId) {
-  const today = getTodayString();
-  const pageTitle = `📅 ${today} 신규 배포`;
-
-  // 1단계: State 캐시 확인 + 실제 존재 검증
-  if (state.notion.dailyPageDate === today && state.notion.dailyPageId) {
-    try {
-      const page = await notionRequest('GET', `/v1/pages/${state.notion.dailyPageId}`);
-      if (!page.archived) {
-        console.log(`  ✓ Today's page verified: ${state.notion.dailyPageId}`);
-        return state.notion.dailyPageId;
-      }
-      console.log(`  ⚠️ Cached page is archived, searching for existing page...`);
-    } catch (e) {
-      console.log(`  ⚠️ Cached page not found (${e.message}), searching for existing page...`);
-    }
-  }
-
-  // 2단계: Notion API로 기존 child_page 검색
-  console.log(`  🔍 Searching for existing page: ${pageTitle}`);
-
-  let cursor = undefined;
-  let hasMore = true;
-
-  while (hasMore) {
-    const queryParams = cursor ? `?start_cursor=${cursor}` : '';
-    const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesPageId}/children${queryParams}`);
-
-    for (const block of existingBlocks.results) {
-      if (block.type === 'child_page' && block.child_page) {
-        const title = block.child_page.title || '';
-        if (title.includes(today)) {
-          // 기존 페이지 발견 - State 동기화 후 반환
-          console.log(`  ✓ Found existing page for ${today}: ${block.id}`);
-          state.notion.dailyPageDate = today;
-          state.notion.dailyPageId = block.id;
-          return block.id;
-        }
-      }
-    }
-
-    hasMore = existingBlocks.has_more;
-    cursor = existingBlocks.next_cursor;
-  }
-
-  // 3단계: 새 페이지 생성
-  console.log(`  📄 Creating new child page: ${pageTitle}`);
-
-  const payload = {
-    parent: { page_id: releasesPageId },
-    properties: {
-      title: { title: [{ text: { content: pageTitle }}]}
-    },
-    icon: { emoji: '📅' },
-    children: [
-      {
-        type: 'heading_2',
-        heading_2: {
-          rich_text: [{ text: { content: '🚀 오늘의 릴리스' }}]
-        }
-      }
-    ]
-  };
-
-  const response = await notionRequest('POST', '/v1/pages', payload);
-  const pageId = response.id;
-
-  state.notion.dailyPageDate = today;
-  state.notion.dailyPageId = pageId;
-
-  console.log(`  ✓ Child page created: ${pageId}`);
-
-  return pageId;
-}
-
-async function addLinkToReleasesPage(releasesPageId, dailyPageId, dateString) {
-  console.log(`  🔗 Adding link to Releases page: ${dateString}`);
-
-  // "신규 배포" 페이지 상단에 링크 추가
-  const existingBlocks = await notionRequest('GET', `/v1/blocks/${releasesPageId}/children`);
-
-  // 이미 오늘 날짜 링크가 있는지 확인
-  for (const block of existingBlocks.results) {
-    if (block.type === 'child_page' && block.child_page) {
-      const pageTitle = block.child_page.title || '';
-      if (pageTitle.includes(dateString)) {
-        console.log(`  ✓ Child page already exists for ${dateString}`);
-        return;
-      }
-    }
-  }
-
-  console.log(`  ✓ Child page will appear automatically in Releases page`);
-}
-
-async function addToNotion(dailyPageId, item, translatedSummary, analysis) {
-  const isRss = item.feedType === 'rss';
-
-  const title = isRss ? item.title : (item.release_details?.release_name || item.product?.display_name || 'Unknown');
-  const vendor = isRss ? item.vendor : (item.product?.vendor?.display_name || 'Unknown');
-  const url = isRss ? item.link : `https://releasebot.io/updates/${item.product?.vendor?.slug || ''}`;
-  const dateStr = isRss
-    ? (item.pubDate instanceof Date ? item.pubDate.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '')
-    : (item.release_date ? new Date(item.release_date).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : '');
-
-  const blocks = [
-    {
-      object: 'block',
-      type: 'heading_3',
-      heading_3: {
-        rich_text: [
-          {
-            type: 'text',
-            text: { content: `🔹 ${title.substring(0, 100)}` }
-          }
-        ]
-      }
-    }
-  ];
-
-  if (translatedSummary) {
-    const summaryText = translatedSummary.length > 500
-      ? translatedSummary.substring(0, 500) + '...'
-      : translatedSummary;
-    blocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [{ type: 'text', text: { content: summaryText } }]
-      }
-    });
-  }
-
-  blocks.push({
-    object: 'block',
-    type: 'paragraph',
-    paragraph: {
-      rich_text: [
-        {
-          type: 'text',
-          text: { content: `📡 ${vendor} • ${dateStr}` },
-          annotations: { color: 'gray' }
-        }
-      ]
-    }
-  });
-
-  if (url) {
-    blocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [
-          {
-            type: 'text',
-            text: { content: '🔗 ', link: null }
-          },
-          {
-            type: 'text',
-            text: { content: '자세히 보기', link: { url: url } },
-            annotations: { color: 'blue' }
-          }
-        ]
-      }
-    });
-  }
-
-  // 환경 분석 결과 추가
-  if (analysis) {
-    blocks.push({
-      object: 'block',
-      type: 'callout',
-      callout: {
-        rich_text: [{ type: 'text', text: { content: analysis } }],
-        icon: { emoji: '📊' },
-        color: 'blue_background'
-      }
-    });
-  }
-
-  blocks.push({
-    object: 'block',
-    type: 'divider',
-    divider: {}
-  });
-
-  await notionRequest('PATCH', `/v1/blocks/${dailyPageId}/children`, { children: blocks });
-  console.log(`  ✓ Notion: Added to child page`);
 }
 
 // ============ Translation ============
@@ -972,8 +747,9 @@ async function main() {
   console.log('\n📋 Configuration:');
   console.log(`  SLACK_CHANNEL_ID: ${SLACK_CHANNEL_ID}`);
   console.log(`  DEEPL_API_KEY: ${DEEPL_API_KEY ? 'set' : 'NOT SET'}`);
-  console.log(`  NOTION_API_TOKEN: ${NOTION_API_TOKEN ? 'set' : 'NOT SET'}`);
+  console.log(`  NOTION_API_TOKEN: ${NOTION_API_TOKEN ? 'set (queue mode)' : 'NOT SET'}`);
   console.log(`  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY ? 'set' : 'NOT SET'}`);
+  console.log(`  → Notion은 직접 쓰지 않고 ${NOTION_QUEUE_FILE}에 큐잉 후 ai_trend_collector가 09:00에 통합 발행`);
   
   const state = loadState();
   if (!state.rss) state.rss = {};
@@ -1002,24 +778,9 @@ async function main() {
     return;
   }
 
-  let releasesPageId = null;
-  let dailyPageId = null;
-
-  if (NOTION_API_TOKEN) {
-    try {
-      const releasesData = await getOrCreateReleasesPage(state);
-      releasesPageId = releasesData.releasesPageId;
-
-      dailyPageId = await getOrCreateDailyPage(state, releasesPageId);
-    } catch (e) {
-      console.error(`  ✗ Notion setup failed: ${e.message}`);
-    }
-  }
-
   let slackSuccessCount = 0;
   let slackFailCount = 0;
-  let notionSuccessCount = 0;
-  let notionFailCount = 0;
+  const notionQueue = [];
 
   for (const item of allItems) {
     const isRss = item.feedType === 'rss';
@@ -1051,6 +812,7 @@ async function main() {
       analysis = await analyzeRelevanceToEnvironment(item, userEnv);
     }
 
+    // Slack 알림 (실시간 유지)
     try {
       const { blocks, text } = formatSlackMessage(item, translatedSummary, analysis);
       await postToSlack(SLACK_CHANNEL_ID, blocks, text);
@@ -1061,32 +823,53 @@ async function main() {
       slackFailCount++;
     }
 
-    if (dailyPageId) {
-      try {
-        await addToNotion(dailyPageId, item, translatedSummary, analysis);
-        console.log('  ✓ Notion: Added');
-        notionSuccessCount++;
-      } catch (e) {
-        console.error(`  ✗ Notion: ${e.message}`);
-        notionFailCount++;
-      }
-    }
+    // Notion 큐에 추가 (ai_trend_collector가 09:00에 통합 발행)
+    const title = isRss
+      ? item.title
+      : (item.release_details?.release_name || item.product?.display_name || 'Unknown');
+    const vendor = isRss
+      ? (item.vendor || '')
+      : (item.product?.vendor?.display_name || '');
+    const url = isRss
+      ? item.link
+      : `https://releasebot.io/updates/${item.product?.vendor?.slug || ''}`;
+    const releaseDate = isRss
+      ? (item.pubDate instanceof Date ? item.pubDate.toISOString() : '')
+      : (item.release_date || '');
+
+    notionQueue.push({
+      title,
+      vendor,
+      url,
+      summary_ko: translatedSummary || summary || '',
+      analysis_text: analysis || '',
+      source: isRss ? 'rss' : 'releasebot',
+      source_name: isRss ? (item.source || '') : 'Releasebot',
+      release_date: releaseDate,
+      processed_at: new Date().toISOString()
+    });
+    console.log('  ✓ Queue: Enqueued for Notion');
 
     await sleep(2000);
   }
   
   saveState(state);
   console.log('\n✓ State saved');
+
+  // Notion 큐 파일에 저장
+  if (notionQueue.length > 0) {
+    appendToNotionQueue(notionQueue);
+  }
   
-  printSummary(slackSuccessCount, slackFailCount, notionSuccessCount, notionFailCount);
+  printSummary(slackSuccessCount, slackFailCount, notionQueue.length, 0);
 }
 
-function printSummary(slackSuccess, slackFail, notionSuccess, notionFail) {
+function printSummary(slackSuccess, slackFail, notionQueued, _unused) {
   console.log('\n' + '='.repeat(60));
   console.log('📊 EXECUTION SUMMARY');
   console.log('='.repeat(60));
-  console.log(`Slack:  ${slackSuccess} succeeded, ${slackFail} failed`);
-  console.log(`Notion: ${notionSuccess} succeeded, ${notionFail} failed`);
+  console.log(`Slack:        ${slackSuccess} succeeded, ${slackFail} failed`);
+  console.log(`Notion Queue: ${notionQueued} items enqueued (published at 09:00 by ai_trend_collector)`);
   console.log(`Completed: ${new Date().toISOString()}`);
   console.log('='.repeat(60));
 }
